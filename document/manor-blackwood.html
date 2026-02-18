@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arsip Manor Blackwood 1888</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f0f0f;
+            --paper-aged: #d2c5b3;
+            --ink: #1a1a1a;
+            --blood: #8b0000;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #e0e0e0;
+            font-family: 'Crimson Pro', serif;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        #ambient-light {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 50%, transparent 15%, rgba(0,0,0,0.85) 70%);
+            z-index: 50;
+            /* Transition dipercepat (0.05s) agar tidak terasa 'ikut telat' saat gerak cepat */
+            transition: background 0.05s ease-out;
+            will-change: background;
+        }
+
+        .typewriter { font-family: 'Special Elite', cursive; }
+        .serif-bold { font-family: 'Playfair Display', serif; }
+
+        .paper-content {
+            background-color: var(--paper-aged);
+            color: var(--ink);
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            position: relative;
+            border-radius: 2px;
+        }
+
+        .stamped-closed {
+            border: 5px double var(--blood);
+            color: var(--blood);
+            font-family: 'Special Elite', cursive;
+            padding: 10px 30px;
+            transform: rotate(-10deg);
+            display: inline-block;
+            font-size: 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        .diary-entry {
+            border-left: 3px solid var(--blood);
+            padding-left: 1.5rem;
+            margin-bottom: 3rem;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1.5rem;
+            border-radius: 0 10px 10px 0;
+        }
+
+        @media (min-width: 768px) {
+            .diary-entry {
+                padding-left: 2rem;
+                padding: 2rem;
+            }
+            .stamped-closed {
+                font-size: 2.5rem;
+                padding: 15px 40px;
+            }
+        }
+
+        .audio-control {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 100;
+            background: var(--blood);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(139,0,0,0.5);
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .locked-badge {
+            background: #222;
+            color: #666;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        .serif-bold {
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body class="selection:bg-red-900 selection:text-white">
+
+    <div id="ambient-light"></div>
+
+    <div id="audio-btn" class="audio-control typewriter">
+        <span id="audio-icon">🔈</span> AKTIFKAN Audio.
+    </div>
+    <audio id="bg-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3" type="audio/mpeg">
+    </audio>
+
+    <header class="relative py-20 md:py-32 px-6 text-center border-b border-zinc-800 bg-black">
+        <p class="typewriter text-red-600 tracking-[0.2em] md:tracking-[0.4em] text-[10px] md:text-xs mb-4 uppercase">Arsip Deklasifikasi: Kasus #1888-C291-EXT-Doc1</p>
+        <h1 class="serif-bold text-4xl sm:text-5xl md:text-8xl text-white mb-6 uppercase">Manor <span class="text-red-900">Blackwood</span></h1>
+        <p class="max-w-2xl mx-auto italic text-zinc-400 text-base md:text-lg px-4">
+            "Tempat di mana bayang-bayang memiliki lidah dan dinding-dinding menyimpan sisa-sisa napas yang tercekik."
+        </p>
+    </header>
+
+    <main class="max-w-4xl mx-auto py-12 md:py-20 px-5 md:px-6 relative z-10">
+        
+        <section class="mb-24 md:mb-32">
+            <h2 class="typewriter text-red-700 text-lg md:text-xl mb-10 md:mb-12 flex items-center gap-4">
+                <span class="h-[2px] w-8 md:w-12 bg-red-900"></span> I. CATATAN HARIAN JULIAN BLACKWOOD
+            </h2>
+
+            <div class="diary-entry shadow-xl">
+                <h3 class="serif-bold text-xl md:text-2xl text-red-100 mb-4 md:mb-6">14 November 1888</h3>
+                <div class="space-y-4 text-zinc-300 text-base md:text-lg leading-relaxed">
+                    <p>Kabut musim gugur ini terasa berbeda; ia merayap seperti jemari dingin seorang pengemis yang meminta nyawa. Kamar kakakku, Elara, tetap terkunci sejak "insiden" itu. Ayah bersikeras bahwa ia menderita melancholia hebat, bahwa ia adalah ancaman bagi dirinya sendiri.</p>
+                    <p>Namun, dari balik pintu kayu jati yang tebal itu, aku tidak mendengar isak tangis. Aku mendengar suara goresan. Sesuatu yang tajam sedang mengukir lantai, ritme yang konstan, seperti detak jantung yang terburu-buru.</p>
+                    <p>Pagi ini, aku menemukan pelayan tua kita, Martha, gemetar di dapur. Ia bersumpah melihat Elara berdiri di balkon pada jam tiga pagi, mengenakan gaun pengantin ibu yang sudah menguning. Padahal, kunci kamar itu ada di saku jas Ayah. Ayah yang malang, ia tampak semakin kurus, seolah-olah ada sesuatu yang menghisap sumsum tulangnya setiap malam.</p>
+                </div>
+            </div>
+
+            <div class="diary-entry shadow-xl">
+                <h3 class="serif-bold text-xl md:text-2xl text-red-100 mb-4 md:mb-6">25 November 1888</h3>
+                <div class="space-y-4 text-zinc-300 text-base md:text-lg leading-relaxed">
+                    <p>Malam perjamuan. Ayah mengundang Dokter Aristhone untuk memeriksa Elara sekali lagi. Suasana meja makan sangat sunyi, hanya denting perak yang beradu dengan porselen. Ayah terus menuangkan anggur merah ke gelasnya, tangannya gemetar hebat.</p>
+                    <div class="bg-black/50 p-6 md:p-8 italic border-l-2 border-red-600 text-zinc-400 my-6 md:my-8 text-sm md:text-base">
+                        "Julian," bisik Ayah tiba-tiba, matanya kosong menatap lilin yang mulai meredup. "Apakah kau sudah memberikan obat malamnya untuk kakakmu? Dosis yang aku siapkan di botol biru?"
+                    </div>
+                    <p>Aku mengangguk pelan. "Tentu, Ayah. Tepat seperti yang kau ajarkan. Agar dia tenang. Agar dia tidak lagi... berteriak tentang apa yang kau lakukan pada Ibu di malam badai itu."</p>
+                    <p>Dokter Aristhone tampak bingung, namun ia terdiam saat melihat senyumku. Senyum yang, menurut cermin di lorong, semakin mirip dengan senyum Ibu sebelum ia 'menghilang'.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-24 md:mb-32">
+            <div class="paper-content p-8 md:p-20 text-ink transform -rotate-1 shadow-2xl">
+                <div class="absolute top-0 right-0 p-4 md:p-6 opacity-30 typewriter text-[8px] md:text-xs uppercase">Diambil dari Perpustakaan Keluarga Blackwood</div>
+                <h2 class="serif-bold text-2xl md:text-3xl mb-6 md:mb-8 border-b border-black/10 pb-4">Potongan Surat Tanpa Alamat</h2>
+                <p class="text-xl md:text-2xl italic leading-relaxed font-serif">
+                    "...kau bertanya mengapa teh di rumah ini selalu terasa seperti tembaga? Itu bukan karena pipa-pipa tua, Sayangku. Itu adalah rasa kesetiaan. Elara tidak sakit. Ia hanya terlalu jujur melihat apa yang kita sembunyikan di bawah akar pohon oak di halaman belakang. Jika kau mendengar ia memanggil namamu malam ini, jangan menoleh. Ingatlah, bahwa di keluarga ini, kasih sayang yang paling murni adalah kemampuan untuk mengubur rahasia lebih dalam daripada jenazah."
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-24 md:mb-32">
+            <h2 class="typewriter text-red-700 text-lg md:text-xl mb-10 md:mb-12 flex items-center gap-4">
+                <span class="h-[2px] w-8 md:w-12 bg-red-900"></span> IV. FRAGMEN TERAKHIR (3 JAN 1889)
+            </h2>
+            <div class="space-y-6 md:space-y-8 text-zinc-200 text-lg md:text-xl leading-relaxed md:leading-loose">
+                <p>Rumah ini akhirnya sunyi. Ayah tidak lagi gemetar; ia berbaring sangat tenang di kursi kerjanya, dengan sisa anggur merah yang masih membasahi kerah kemejanya—rasa tembaga itu kini memenuhi ruangan, lebih pekat dari biasanya.</p>
+                <p>Orang-orang akan berkata bahwa Elara yang malang, dalam kegilaannya, telah meracuni minuman kami semua sebelum akhirnya ia sendiri melompat dari balkon dengan gaun pengantin Ibu. Mereka akan menemukan tubuhnya yang ringkih di bawah sana, dan mereka akan menemukan botol biru kosong di tangannya.</p>
+                <p>Betapa malangnya kakakku. Betapa malangnya Ayah.</p>
+                <div class="p-6 md:p-10 bg-zinc-900/80 rounded-lg border border-red-900/30 italic text-zinc-300 text-base md:text-lg">
+                    Aku sedang duduk di depan perapian sekarang, menyesap tehku yang terasa manis karena aku tahu cara menyeduhnya tanpa campuran logam. Aku melihat kunci kamar Elara yang terletak di atas meja, kunci yang selalu ada di sakuku sejak tiga minggu yang lalu, jauh sebelum Ayah menyadarinya hilang.
+                </div>
+                <p>Ternyata, menjadi satu-satunya saksi yang selamat dari sebuah tragedi keluarga adalah cara termudah untuk mewarisi seluruh tanah ini tanpa perlu lagi mendengar suara goresan di lantai atas. Aku hanya perlu memastikan bahwa dalam setiap cerita yang tersisa, akulah satu-satunya orang yang mencoba menyelamatkan mereka.</p>
+            </div>
+        </section>
+
+        <section class="mb-24 md:mb-32 p-6 md:p-12 bg-zinc-950 border border-zinc-800 rounded relative overflow-hidden shadow-inner">
+            <div class="text-center mb-10 md:mb-12">
+                <div class="stamped-closed">CASE CLOSED</div>
+                <p class="typewriter text-zinc-500 mt-4 text-[10px] md:text-sm">PENGADILAN TINGGI DISTRIK BERKSHIRE - ARSIP FINAL</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 typewriter text-[11px] md:text-sm border-t border-zinc-800 pt-8 md:pt-10">
+                <div class="space-y-4 md:space-y-6">
+                    <p class="text-zinc-600 uppercase font-bold tracking-widest">Keputusan Akhir</p>
+                    <p>Kasus Blackwood secara resmi dihentikan dan dianggap sebagai tragedi keluarga akibat ketidakstabilan mental Elara Blackwood.</p>
+                    <p><span class="text-red-900 font-bold">TANGGAL PENUTUPAN:</span> 5 MEI 1895</p>
+                </div>
+                <div class="space-y-4 md:space-y-6">
+                    <p class="text-zinc-600 uppercase font-bold tracking-widest">Detail Warisan</p>
+                    <p>Sesuai dengan wasiat yang ditemukan, seluruh properti dan dana dialihkan kepada Julian Blackwood.</p>
+                    <p class="italic">"Pihak kepolisian tidak menemukan cukup bukti untuk menahan subjek J.B. atas tuduhan sabotase racun."</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-black/50 p-6 md:p-10 rounded-lg border border-zinc-900">
+            <div class="flex items-center justify-between mb-8 md:mb-10">
+                <h3 class="serif-bold text-xl md:text-2xl text-white">Teori & Diskusi Arsip</h3>
+                <span class="locked-badge typewriter">Akses Terkunci</span>
+            </div>
+            
+            <div class="space-y-6 md:space-y-8">
+                <div class="border-b border-zinc-800 pb-5 md:pb-6 opacity-60">
+                    <div class="flex justify-between text-[10px] md:text-xs typewriter mb-2">
+                        <span class="text-red-600">@WowoSuper</span>
+                        <span>7 Mei 1895</span>
+                    </div>
+                    <p class="text-zinc-400 italic text-sm md:text-base">"Ada yang aneh. Racun di botol biru itu bereaksi terlalu cepat untuk seseorang yang sedang depresi. Tapi siapa yang peduli? Julian sudah punya uang untuk membungkam kita semua."</p>
+                </div>
+
+                <div class="border-b border-zinc-800 pb-5 md:pb-6 opacity-60">
+                    <div class="flex justify-between text-[10px] md:text-xs typewriter mb-2">
+                        <span class="text-zinc-500">@Martha_Elizabeth_v</span>
+                        <span>15 Mei 1895</span>
+                    </div>
+                    <p class="text-zinc-400 italic text-sm md:text-base">"Aku tahu apa yang aku lihat. Nona Elara tidak pernah keluar dari kamar itu. Kunci itu selalu ada di saku tuan muda Julian. Dia melihat kita semua sebagai bidak catur."</p>
+                </div>
+
+                <div class="opacity-60 pb-5">
+                    <div class="flex justify-between text-[10px] md:text-xs typewriter mb-2">
+                        <span class="text-zinc-500">Akun Anonim</span>
+                        <span>20 Mei 1895</span>
+                    </div>
+                    <p class="text-zinc-400 italic text-sm md:text-base">"Rumah itu masih berhantu. Julian tinggal di sana sendirian sekarang, tapi penduduk desa bilang mereka masih mendengar suara goresan di lantai atas. Mungkin Elara tidak benar-benar pergi."</p>
+                </div>
+            </div>
+
+            <div class="mt-8 md:mt-12">
+                <div class="w-full bg-zinc-900/50 p-4 border border-zinc-800 text-zinc-600 italic text-xs md:text-sm text-center">
+                    Kolom komentar dinonaktifkan secara permanen berdasarkan pengadilan.
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="py-16 md:py-24 text-center border-t border-zinc-900 opacity-20">
+        <p class="typewriter text-[8px] md:text-[10px] tracking-[0.3em] md:tracking-[0.5em] px-4">BLACKWOOD ESTATE RECORDS © 1888-1895</p>
+    </footer>
+
+    <script>
+        const ambient = document.getElementById('ambient-light');
+        
+        // Simpan posisi terakhir mouse agar bisa diupdate saat scroll
+        let lastX = window.innerWidth / 2;
+        let lastY = window.innerHeight / 2;
+
+        function updateFlashlight(clientX, clientY) {
+            const x = (clientX / window.innerWidth) * 100;
+            const y = (clientY / window.innerHeight) * 100;
+            ambient.style.background = `radial-gradient(circle at ${x}% ${y}%, transparent 15%, rgba(0,0,0,0.85) 70%)`;
+            lastX = clientX;
+            lastY = clientY;
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            updateFlashlight(e.clientX, e.clientY);
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches[0]) {
+                updateFlashlight(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        window.addEventListener('scroll', () => {
+            updateFlashlight(lastX, lastY);
+        }, { passive: true });
+
+        const audioBtn = document.getElementById('audio-btn');
+        const audio = document.getElementById('bg-music');
+        let isPlaying = false;
+
+        audioBtn.addEventListener('click', () => {
+            if (!isPlaying) {
+                audio.play();
+                audioBtn.innerHTML = '<span>🔊</span> Audio Aktif';
+                audioBtn.style.background = '#333';
+                isPlaying = true;
+            } else {
+                audio.pause();
+                audioBtn.innerHTML = '<span>🔈</span> Aktifkan Audio';
+                audioBtn.style.background = '#8b0000';
+                isPlaying = false;
+            }
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = "1";
+                    entry.target.style.transform = "translateY(0)";
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('section').forEach(el => {
+            el.style.opacity = "0";
+            el.style.transform = "translateY(40px)";
+            el.style.transition = "all 1s cubic-bezier(0.22, 1, 0.36, 1)";
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
+

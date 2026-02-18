@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beranda</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: white;
+            font-family: 'Inter', sans-serif;
+        }
+
+        #bgCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .content-overlay {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .nav-link {
+            transition: all 0.3s ease;
+            color: #64748b;
+        }
+
+        .nav-link:hover {
+            color: #0ea5e9;
+            transform: translateY(-3px);
+        }
+
+        .nav-link svg {
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link:hover svg {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="content-overlay px-4">
+        <h1 class="text-4xl font-light mb-2 tracking-tight text-slate-800">Selamat Datang</h1>
+        
+        <div class="flex gap-12 sm:gap-20">
+            <a href="/doc/" class="nav-link flex flex-col items-center group">
+                <div class="w-16 h-16 mb-3 flex items-center justify-center rounded-full bg-slate-50 group-hover:bg-blue-50 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <span class="font-medium text-sm tracking-wide uppercase">Document</span>
+            </a>
+
+            <a href="/0/" class="nav-link flex flex-col items-center group">
+                <div class="w-16 h-16 mb-3 flex items-center justify-center rounded-full bg-slate-50 group-hover:bg-purple-50 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <span class="font-medium text-sm tracking-wide uppercase">Random Code</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, dolphins = [], ripples = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Ripple {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.radius = 2;
+                this.opacity = 0.5;
+            }
+            update() { this.radius += 1.8; this.opacity -= 0.012; }
+            draw() {
+                if (this.opacity <= 0) return;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(14, 165, 233, ${this.opacity})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        class Dolphin {
+            constructor() { this.reset(); }
+            reset() {
+                this.side = Math.random() > 0.5 ? 1 : -1;
+                this.x = this.side === 1 ? -120 : width + 120;
+                this.waterLevel = height * 0.88; 
+                this.y = this.waterLevel + 100;
+                this.vx = (2.2 + Math.random() * 3) * this.side;
+                this.vy = -(12 + Math.random() * 6);
+                this.gravity = 0.35;
+                this.size = 0.45 + Math.random() * 0.2;
+                this.angle = 0;
+                this.inAir = false;
+                this.hasSplat = false;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy; this.vy += this.gravity;
+                this.angle = Math.atan2(this.vy, this.vx);
+                if (this.y < this.waterLevel) {
+                    this.inAir = true;
+                } else if (this.inAir && this.y >= this.waterLevel) {
+                    if (!this.hasSplat) {
+                        ripples.push(new Ripple(this.x, this.waterLevel));
+                        this.hasSplat = true;
+                    }
+                    if (this.y > this.waterLevel + 150) this.reset();
+                }
+                if (this.x > width + 300 || this.x < -300) this.reset();
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.scale(this.size, this.size);
+                ctx.fillStyle = '#5da2d5';
+                ctx.beginPath(); ctx.ellipse(0, 0, 42, 12, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(-5, -10); ctx.quadraticCurveTo(-15, -25, -22, -4); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(-38, 0); ctx.lineTo(-55, -12); ctx.lineTo(-55, 12); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = '#f1f5f9';
+                ctx.beginPath(); ctx.ellipse(5, 4, 30, 6, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function drawSea() {
+            let grad = ctx.createLinearGradient(0, height * 0.88, 0, height);
+            grad.addColorStop(0, 'rgba(14, 165, 233, 0.3)');
+            grad.addColorStop(1, 'rgba(2, 132, 199, 0.5)');
+            ctx.beginPath();
+            ctx.moveTo(0, height);
+            ctx.lineTo(0, height * 0.88);
+            for (let i = 0; i <= width; i += 20) {
+                let wave = Math.sin(i * 0.01 + Date.now() * 0.002) * 5;
+                ctx.lineTo(i, height * 0.88 + wave);
+            }
+            ctx.lineTo(width, height);
+            ctx.fillStyle = grad;
+            ctx.fill();
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            ripples.forEach((r, i) => { 
+                r.update(); r.draw(); 
+                if (r.opacity <= 0) ripples.splice(i, 1); 
+            });
+            dolphins.forEach(d => { d.update(); d.draw(); });
+            drawSea();
+            requestAnimationFrame(animate);
+        }
+
+        for (let i = 0; i < 2; i++) {
+            setTimeout(() => { dolphins.push(new Dolphin()); }, i * 2500);
+        }
+        
+        animate();
+    </script>
+</body>
+</html>
+
