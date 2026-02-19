@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resizer Gambar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #ffffff;
+            font-family: 'Inter', sans-serif;
+        }
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .custom-checkbox:checked {
+            background-color: #0ea5e9;
+            border-color: #0ea5e9;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 pb-20">
+
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="max-w-2xl mx-auto py-12 px-4 relative z-10">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-sky-600 mb-2">Resizer Gambar</h1>
+            <p class="text-slate-500">Ubah ukuran gambar dengan presisi.</p>
+        </header>
+
+        <div class="glass-panel p-8 rounded-3xl shadow-sm mb-6 text-center">
+            <label class="block text-sm font-semibold mb-4 text-left text-slate-700">1. Unggah Foto</label>
+            <input type="file" id="imageInput" accept="image/*" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer" />
+        </div>
+
+        <div id="controls" class="hidden space-y-6">
+            <div class="glass-panel p-8 rounded-3xl shadow-sm">
+                <label class="block text-sm font-semibold mb-6 text-slate-700">2. Atur Dimensi (px)</label>
+                
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-2 uppercase">Lebar (Width)</label>
+                        <input type="number" id="widthInput" placeholder="1080" class="w-full p-3 bg-white/50 border-2 border-slate-100 rounded-xl focus:border-sky-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-2 uppercase">Tinggi (Height)</label>
+                        <input type="number" id="heightInput" placeholder="1080" class="w-full p-3 bg-white/50 border-2 border-slate-100 rounded-xl focus:border-sky-500 outline-none transition">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 p-4 bg-sky-50/50 rounded-2xl border border-sky-100">
+                    <input type="checkbox" id="maintainAspect" checked class="w-5 h-5 rounded border-sky-300 text-sky-600 focus:ring-sky-500 cursor-pointer">
+                    <label for="maintainAspect" class="text-sm font-medium text-sky-800 cursor-pointer select-none">
+                        Pertahankan Proporsi Foto (Agar tidak gepeng)
+                    </label>
+                </div>
+            </div>
+
+            <button id="processBtn" class="w-full py-4 bg-sky-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-sky-200 hover:bg-sky-700 transition transform active:scale-[0.98] uppercase tracking-wide">
+                Generate
+            </button>
+        </div>
+
+        <div id="resultArea" class="hidden mt-12 text-center">
+            <h2 class="text-xl font-bold mb-6">Hasil Pratinjau</h2>
+            <div class="inline-block p-2 bg-white rounded-2xl shadow-xl mb-6 border border-slate-100">
+                <canvas id="resultCanvas" class="max-w-full h-auto rounded-lg shadow-inner"></canvas>
+            </div>
+            <br>
+            <button id="downloadBtn" class="px-10 py-4 bg-emerald-500 text-white font-bold rounded-2xl hover:bg-emerald-600 shadow-lg shadow-emerald-100 transition inline-flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                UNDUH GAMBAR
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const bgCanvas = document.getElementById('bgCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let w, h, dolphins = [], ripples = [];
+
+        function resizeBg() {
+            w = bgCanvas.width = window.innerWidth;
+            h = bgCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeBg);
+        resizeBg();
+
+        class Ripple {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.radius = 2;
+                this.opacity = 0.5;
+            }
+            update() { this.radius += 2; this.opacity -= 0.015; }
+            draw() {
+                if (this.opacity <= 0) return;
+                bgCtx.beginPath();
+                bgCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                bgCtx.strokeStyle = `rgba(14, 165, 233, ${this.opacity})`;
+                bgCtx.lineWidth = 2;
+                bgCtx.stroke();
+            }
+        }
+
+        class Dolphin {
+            constructor() { this.reset(); }
+            reset() {
+                this.side = Math.random() > 0.5 ? 1 : -1;
+                this.x = this.side === 1 ? -150 : w + 150;
+                this.waterLevel = h * 0.88;
+                this.y = this.waterLevel + 80;
+                this.vx = (2.5 + Math.random() * 3) * this.side;
+                this.vy = -(14 + Math.random() * 5);
+                this.gravity = 0.4;
+                this.size = 0.5 + Math.random() * 0.2;
+                this.angle = 0;
+                this.inAir = false;
+                this.hasSplat = false;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy; this.vy += this.gravity;
+                this.angle = Math.atan2(this.vy, this.vx);
+                if (this.y < this.waterLevel) this.inAir = true;
+                else if (this.inAir && this.y >= this.waterLevel) {
+                    if (!this.hasSplat) {
+                        ripples.push(new Ripple(this.x, this.waterLevel));
+                        this.hasSplat = true;
+                    }
+                    if (this.y > this.waterLevel + 150) this.reset();
+                }
+                if (this.x > w + 300 || this.x < -300) this.reset();
+            }
+            draw() {
+                bgCtx.save();
+                bgCtx.translate(this.x, this.y);
+                bgCtx.rotate(this.angle);
+                bgCtx.scale(this.size, this.size);
+                bgCtx.fillStyle = '#0ea5e9';
+                bgCtx.beginPath(); bgCtx.ellipse(0, 0, 45, 14, 0, 0, Math.PI * 2); bgCtx.fill();
+                bgCtx.beginPath(); bgCtx.moveTo(-5, -10); bgCtx.quadraticCurveTo(-15, -28, -25, -5); bgCtx.fill();
+                bgCtx.beginPath(); bgCtx.moveTo(-40, 0); bgCtx.lineTo(-60, -15); bgCtx.lineTo(-60, 15); bgCtx.closePath(); bgCtx.fill();
+                bgCtx.fillStyle = '#f0f9ff';
+                bgCtx.beginPath(); bgCtx.ellipse(5, 5, 30, 8, 0, 0, Math.PI * 2); bgCtx.fill();
+                bgCtx.restore();
+            }
+        }
+
+        function drawSea() {
+            let grad = bgCtx.createLinearGradient(0, h * 0.88, 0, h);
+            grad.addColorStop(0, 'rgba(14, 165, 233, 0.2)');
+            grad.addColorStop(1, 'rgba(2, 132, 199, 0.4)');
+            bgCtx.beginPath();
+            bgCtx.moveTo(0, h);
+            bgCtx.lineTo(0, h * 0.88);
+            for (let i = 0; i <= w; i += 20) {
+                let wave = Math.sin(i * 0.012 + Date.now() * 0.003) * 5;
+                bgCtx.lineTo(i, h * 0.88 + wave);
+            }
+            bgCtx.lineTo(w, h);
+            bgCtx.fillStyle = grad;
+            bgCtx.fill();
+        }
+
+        function animate() {
+            bgCtx.clearRect(0, 0, w, h);
+            ripples.forEach((r, i) => { r.update(); r.draw(); if (r.opacity <= 0) ripples.splice(i, 1); });
+            dolphins.forEach(d => { d.update(); d.draw(); });
+            drawSea();
+            requestAnimationFrame(animate);
+        }
+
+        for (let i = 0; i < 2; i++) {
+            setTimeout(() => dolphins.push(new Dolphin()), i * 2000);
+        }
+        animate();
+
+        const imageInput = document.getElementById('imageInput');
+        const controls = document.getElementById('controls');
+        const widthInput = document.getElementById('widthInput');
+        const heightInput = document.getElementById('heightInput');
+        const maintainAspect = document.getElementById('maintainAspect');
+        const processBtn = document.getElementById('processBtn');
+        const resultArea = document.getElementById('resultArea');
+        const resultCanvas = document.getElementById('resultCanvas');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        let originalImg = new Image();
+
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                originalImg.onload = function() {
+                    widthInput.value = originalImg.width;
+                    heightInput.value = originalImg.height;
+                    controls.classList.remove('hidden');
+                    resultArea.classList.add('hidden');
+                };
+                originalImg.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        widthInput.addEventListener('input', () => {
+            if (maintainAspect.checked && originalImg.src) {
+                const ratio = originalImg.height / originalImg.width;
+                heightInput.value = Math.round(widthInput.value * ratio);
+            }
+        });
+
+        heightInput.addEventListener('input', () => {
+            if (maintainAspect.checked && originalImg.src) {
+                const ratio = originalImg.width / originalImg.height;
+                widthInput.value = Math.round(heightInput.value * ratio);
+            }
+        });
+
+        processBtn.addEventListener('click', () => {
+            const targetW = parseInt(widthInput.value) || originalImg.width;
+            const targetH = parseInt(heightInput.value) || originalImg.height;
+            
+            resultCanvas.width = targetW;
+            resultCanvas.height = targetH;
+            
+            const ctx = resultCanvas.getContext('2d');
+            ctx.clearRect(0, 0, targetW, targetH);
+
+            if (maintainAspect.checked) {
+                const imgRatio = originalImg.width / originalImg.height;
+                const targetRatio = targetW / targetH;
+                
+                let drawW, drawH, x, y;
+
+                if (imgRatio > targetRatio) {
+                    drawW = targetW;
+                    drawH = targetW / imgRatio;
+                    x = 0;
+                    y = (targetH - drawH) / 2;
+                } else {
+                    drawW = targetH * imgRatio;
+                    drawH = targetH;
+                    x = (targetW - drawW) / 2;
+                    y = 0;
+                }
+                
+                // Isi background putih jika ada area sisa (opsional)
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0,0, targetW, targetH);
+                ctx.drawImage(originalImg, x, y, drawW, drawH);
+            } else {
+                ctx.drawImage(originalImg, 0, 0, targetW, targetH);
+            }
+
+            resultArea.classList.remove('hidden');
+            resultArea.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = `resized_${widthInput.value}x${heightInput.value}.png`;
+            link.href = resultCanvas.toDataURL('image/png');
+            link.click();
+        });
+    </script>
+</body>
+</html>
+
