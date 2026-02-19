@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potong Gambar Grid 1080px</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        body {
+            background-color: #ffffff;
+            position: relative;
+        }
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Di belakang konten */
+            pointer-events: none;
+        }
+        .grid-overlay {
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .grid-line {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 3px rgba(0,0,0,0.5);
+        }
+        /* Memastikan card konten sedikit transparan agar lumba-lumba terlihat */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans text-gray-900 pb-20">
+
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="max-w-4xl mx-auto py-10 px-4 relative z-10">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-indigo-600 mb-2">Crop</h1>
+        </header>
+
+        <div class="glass-panel p-6 rounded-2xl shadow-sm border border-gray-200 mb-6 text-center">
+            <label class="block text-sm font-semibold mb-4 text-left">1. Unggah Gambar</label>
+            <input type="file" id="imageInput" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer" />
+        </div>
+
+        <div id="optionsPanel" class="hidden space-y-6">
+            <div class="glass-panel p-6 rounded-2xl shadow-sm border border-gray-200">
+                <label class="block text-sm font-semibold mb-4">2. Tentukan Arah Potongan</label>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <button onclick="setDirection('horizontal')" id="btn-horizontal" class="direction-btn flex flex-col items-center justify-center p-4 border-2 rounded-xl hover:bg-indigo-50 transition border-gray-100">
+                        <span class="font-bold">Horizontal</span>
+                        <span class="text-xs text-gray-500">(Bagi Kolom)</span>
+                    </button>
+                    <button onclick="setDirection('vertical')" id="btn-vertical" class="direction-btn flex flex-col items-center justify-center p-4 border-2 rounded-xl hover:bg-indigo-50 transition border-gray-100">
+                        <span class="font-bold">Vertikal</span>
+                        <span class="text-xs text-gray-500">(Bagi Baris)</span>
+                    </button>
+                    <button onclick="setDirection('both')" id="btn-both" class="direction-btn flex flex-col items-center justify-center p-4 border-2 rounded-xl hover:bg-indigo-50 transition border-indigo-500 bg-indigo-50 text-indigo-700">
+                        <span class="font-bold">Keduanya</span>
+                        <span class="text-xs text-indigo-400">(Grid)</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div id="colInputGroup">
+                        <label class="block text-xs font-bold text-gray-600 mb-1 uppercase">Jumlah Kolom</label>
+                        <input type="number" id="cols" value="1" min="1" class="w-full p-3 border-2 rounded-lg focus:border-indigo-500 outline-none transition">
+                    </div>
+                    <div id="rowInputGroup">
+                        <label class="block text-xs font-bold text-gray-600 mb-1 uppercase">Jumlah Baris</label>
+                        <input type="number" id="rows" value="1" min="1" class="w-full p-3 border-2 rounded-lg focus:border-indigo-500 outline-none transition">
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl shadow-sm border border-gray-200 text-center">
+                <label class="block text-sm font-semibold mb-4 text-left">3. Pratinjau Garis Potong</label>
+                <div class="relative inline-block border-4 border-gray-200 rounded-lg overflow-hidden bg-gray-100">
+                    <div id="previewContainer" class="relative">
+                        <img id="imgPreview" class="max-w-full h-auto block" style="max-height: 500px;" src="" alt="">
+                        <div id="gridOverlay" class="grid-overlay"></div>
+                    </div>
+                </div>
+                <div id="infoBox" class="mt-4 p-4 bg-indigo-50 text-indigo-800 rounded-lg text-sm font-medium"></div>
+            </div>
+
+            <button onclick="generateCuts()" class="w-full py-4 bg-indigo-600 text-white font-black text-lg rounded-xl shadow-xl hover:bg-indigo-700 transition transform active:scale-95 uppercase tracking-wider">
+                Potong Gambar Sekarang
+            </button>
+        </div>
+
+        <div id="resultArea" class="hidden mt-10">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">Hasil Potongan</h2>
+                <button id="downloadAllBtn" class="px-6 py-2 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 shadow-lg transition">
+                    UNDUH SEMUA (.ZIP)
+                </button>
+            </div>
+            <div id="resultsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        </div>
+    </div>
+
+    <script>
+        const bgCanvas = document.getElementById('bgCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let width, height, dolphins = [], ripples = [];
+
+        function resize() {
+            width = bgCanvas.width = window.innerWidth;
+            height = bgCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Ripple {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.radius = 2;
+                this.opacity = 0.5;
+            }
+            update() { this.radius += 1.8; this.opacity -= 0.012; }
+            draw() {
+                if (this.opacity <= 0) return;
+                bgCtx.beginPath();
+                bgCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                bgCtx.strokeStyle = `rgba(99, 102, 241, ${this.opacity})`;
+                bgCtx.lineWidth = 2;
+                bgCtx.stroke();
+            }
+        }
+
+        class Dolphin {
+            constructor() { this.reset(); }
+            reset() {
+                this.side = Math.random() > 0.5 ? 1 : -1;
+                this.x = this.side === 1 ? -120 : width + 120;
+                this.waterLevel = height * 0.9;
+                this.y = this.waterLevel + 100;
+                this.vx = (2.2 + Math.random() * 3) * this.side;
+                this.vy = -(12 + Math.random() * 6);
+                this.gravity = 0.35;
+                this.size = 0.4 + Math.random() * 0.25;
+                this.angle = 0;
+                this.inAir = false;
+                this.hasSplat = false;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy; this.vy += this.gravity;
+                this.angle = Math.atan2(this.vy, this.vx);
+                if (this.y < this.waterLevel) {
+                    this.inAir = true;
+                } else if (this.inAir && this.y >= this.waterLevel) {
+                    if (!this.hasSplat) {
+                        ripples.push(new Ripple(this.x, this.waterLevel));
+                        this.hasSplat = true;
+                    }
+                    if (this.y > this.waterLevel + 150) this.reset();
+                }
+                if (this.x > width + 300 || this.x < -300) this.reset();
+            }
+            draw() {
+                bgCtx.save();
+                bgCtx.translate(this.x, this.y);
+                bgCtx.rotate(this.angle);
+                bgCtx.scale(this.size, this.size);
+                bgCtx.fillStyle = '#818cf8';
+                bgCtx.beginPath(); bgCtx.ellipse(0, 0, 42, 12, 0, 0, Math.PI * 2); bgCtx.fill();
+                bgCtx.beginPath(); bgCtx.moveTo(-5, -10); bgCtx.quadraticCurveTo(-15, -25, -22, -4); bgCtx.fill();
+                bgCtx.beginPath(); bgCtx.moveTo(-38, 0); bgCtx.lineTo(-55, -12); bgCtx.lineTo(-55, 12); bgCtx.closePath(); bgCtx.fill();
+                bgCtx.fillStyle = '#e0e7ff';
+                bgCtx.beginPath(); bgCtx.ellipse(5, 4, 30, 6, 0, 0, Math.PI * 2); bgCtx.fill();
+                bgCtx.restore();
+            }
+        }
+
+        function drawSea() {
+            let grad = bgCtx.createLinearGradient(0, height * 0.9, 0, height);
+            grad.addColorStop(0, 'rgba(99, 102, 241, 0.2)');
+            grad.addColorStop(1, 'rgba(67, 56, 202, 0.4)');
+            bgCtx.beginPath();
+            bgCtx.moveTo(0, height);
+            bgCtx.lineTo(0, height * 0.9);
+            for (let i = 0; i <= width; i += 20) {
+                let wave = Math.sin(i * 0.01 + Date.now() * 0.002) * 5;
+                bgCtx.lineTo(i, height * 0.9 + wave);
+            }
+            bgCtx.lineTo(width, height);
+            bgCtx.fillStyle = grad;
+            bgCtx.fill();
+        }
+
+        function animate() {
+            bgCtx.clearRect(0, 0, width, height);
+            ripples.forEach((r, i) => { 
+                r.update(); r.draw(); 
+                if (r.opacity <= 0) ripples.splice(i, 1); 
+            });
+            dolphins.forEach(d => { d.update(); d.draw(); });
+            drawSea();
+            requestAnimationFrame(animate);
+        }
+
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => { dolphins.push(new Dolphin()); }, i * 2000);
+        }
+        animate();
+
+        const imageInput = document.getElementById('imageInput');
+        const imgPreview = document.getElementById('imgPreview');
+        const optionsPanel = document.getElementById('optionsPanel');
+        const gridOverlay = document.getElementById('gridOverlay');
+        const colsInput = document.getElementById('cols');
+        const rowsInput = document.getElementById('rows');
+        const infoBox = document.getElementById('infoBox');
+        
+        let originalImg = null;
+        let mode = 'both'; 
+
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                originalImg = new Image();
+                originalImg.onload = function() {
+                    imgPreview.src = event.target.result;
+                    optionsPanel.classList.remove('hidden');
+                    updateGrid();
+                };
+                originalImg.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function setDirection(newMode) {
+            mode = newMode;
+            document.querySelectorAll('.direction-btn').forEach(btn => {
+                btn.classList.remove('border-indigo-500', 'bg-indigo-50', 'text-indigo-700');
+                btn.classList.add('border-gray-100');
+            });
+            document.getElementById(`btn-${newMode}`).classList.add('border-indigo-500', 'bg-indigo-50', 'text-indigo-700');
+
+            if (mode === 'horizontal') {
+                rowsInput.value = 1;
+                rowsInput.parentElement.style.opacity = '0.3';
+                colsInput.parentElement.style.opacity = '1';
+                rowsInput.disabled = true;
+                colsInput.disabled = false;
+            } else if (mode === 'vertical') {
+                colsInput.value = 1;
+                colsInput.parentElement.style.opacity = '0.3';
+                rowsInput.parentElement.style.opacity = '1';
+                colsInput.disabled = true;
+                rowsInput.disabled = false;
+            } else {
+                colsInput.parentElement.style.opacity = '1';
+                rowsInput.parentElement.style.opacity = '1';
+                colsInput.disabled = false;
+                rowsInput.disabled = false;
+            }
+            updateGrid();
+        }
+
+        function updateGrid() {
+            if (!originalImg) return;
+            const c = parseInt(colsInput.value) || 1;
+            const r = parseInt(rowsInput.value) || 1;
+
+            gridOverlay.innerHTML = '';
+            for (let i = 1; i < c; i++) {
+                const line = document.createElement('div');
+                line.className = 'grid-line';
+                line.style.left = `${(i / c) * 100}%`;
+                line.style.top = '0'; line.style.width = '2px'; line.style.height = '100%';
+                gridOverlay.appendChild(line);
+            }
+            for (let i = 1; i < r; i++) {
+                const line = document.createElement('div');
+                line.className = 'grid-line';
+                line.style.top = `${(i / r) * 100}%`;
+                line.style.left = '0'; line.style.height = '2px'; line.style.width = '100%';
+                gridOverlay.appendChild(line);
+            }
+
+            infoBox.innerHTML = `Ukuran Akhir: <b>${c * 1080} x ${r * 1080} px</b>. Terbagi menjadi <b>${c * r} bagian</b> 1080x1080 px.`;
+        }
+
+        [colsInput, rowsInput].forEach(inp => inp.addEventListener('input', updateGrid));
+
+        async function generateCuts() {
+            const cols = parseInt(colsInput.value) || 1;
+            const rows = parseInt(rowsInput.value) || 1;
+            const resultsGrid = document.getElementById('resultsGrid');
+            const resultArea = document.getElementById('resultArea');
+            
+            resultsGrid.innerHTML = '';
+            resultArea.classList.remove('hidden');
+            resultArea.scrollIntoView({ behavior: 'smooth' });
+
+            const zip = new JSZip();
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 1080;
+            canvas.height = 1080;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const sX = (c / cols) * originalImg.width;
+                    const sY = (r / rows) * originalImg.height;
+                    const sW = originalImg.width / cols;
+                    const sH = originalImg.height / rows;
+
+                    ctx.clearRect(0,0,1080,1080);
+                    ctx.drawImage(originalImg, sX, sY, sW, sH, 0, 0, 1080, 1080);
+                    
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                    const name = `potongan_${r + 1}_${c + 1}.jpg`;
+
+                    const card = document.createElement('div');
+                    card.className = 'bg-white border rounded-xl p-2 shadow-sm flex flex-col items-center';
+                    
+                    const img = document.createElement('img');
+                    img.src = dataUrl;
+                    img.className = 'w-full h-auto rounded-lg mb-2';
+
+                    const btnDl = document.createElement('a');
+                    btnDl.href = dataUrl;
+                    btnDl.download = name;
+                    btnDl.innerText = "Unduh";
+                    btnDl.className = "text-[10px] bg-indigo-100 text-indigo-700 px-3 py-1 rounded font-bold hover:bg-indigo-200 transition mb-1";
+
+                    card.appendChild(img);
+                    card.appendChild(btnDl);
+                    resultsGrid.appendChild(card);
+
+                    const b64 = dataUrl.replace(/^data:image\/(png|jpeg);base64,/, "");
+                    zip.file(name, b64, {base64: true});
+                }
+            }
+
+            document.getElementById('downloadAllBtn').onclick = function() {
+                zip.generateAsync({type:"blob"}).then(blob => {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = "grid_potongan.zip";
+                    link.click();
+                });
+            };
+        }
+    </script>
+</body>
+</html>
+
