@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potong Gambar</title>
+    <title>Crop Gambar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
@@ -17,7 +17,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1; /* Di belakang konten */
+            z-index: -1; 
             pointer-events: none;
         }
         .grid-overlay {
@@ -33,10 +33,16 @@
             background-color: rgba(255, 255, 255, 0.8);
             box-shadow: 0 0 3px rgba(0,0,0,0.5);
         }
-        /* Memastikan card konten sedikit transparan agar lumba-lumba terlihat */
         .glass-panel {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(4px);
+        }
+        #jsonOutput::-webkit-scrollbar {
+            width: 8px;
+        }
+        #jsonOutput::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -46,12 +52,12 @@
 
     <div class="max-w-4xl mx-auto py-10 px-4 relative z-10">
         <header class="text-center mb-10">
-            <h1 class="text-4xl font-bold text-indigo-600 mb-2">Crop</h1>
+            <h1 class="text-4xl font-bold text-blue-600 mb-2">Crop Gambar</h1>
         </header>
 
         <div class="glass-panel p-6 rounded-2xl shadow-sm border border-gray-200 mb-6 text-center">
             <label class="block text-sm font-semibold mb-4 text-left">1. Unggah Gambar</label>
-            <input type="file" id="imageInput" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer" />
+            <input type="file" id="imageInput" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
         </div>
 
         <div id="optionsPanel" class="hidden space-y-6">
@@ -59,28 +65,28 @@
                 <label class="block text-sm font-semibold mb-4">2. Tentukan Arah Potongan</label>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <button onclick="setDirection('horizontal')" id="btn-horizontal" class="direction-btn flex flex-col items-center justify-center p-4 border-2 rounded-xl hover:bg-indigo-50 transition border-gray-100">
+                    <button onclick="setDirection('horizontal')" id="btn-horizontal" class="direction-btn flex flex-col items-center justify-center p-4 border-2 rounded-xl hover:bg-blue-50 transition border-gray-100">
                         <span class="font-bold">Horizontal</span>
                         <span class="text-xs text-gray-500">(Bagi Kolom)</span>
                     </button>
-                    <button onclick="setDirection('vertical')" id="btn-vertical" class="direction-btn flex flex-col items-center justify-center p-4 border-2 rounded-xl hover:bg-indigo-50 transition border-gray-100">
+                    <button onclick="setDirection('vertical')" id="btn-vertical" class="direction-btn flex flex-col items-center justify-center p-4 border-2 rounded-xl hover:bg-blue-50 transition border-gray-100">
                         <span class="font-bold">Vertikal</span>
                         <span class="text-xs text-gray-500">(Bagi Baris)</span>
                     </button>
-                    <button onclick="setDirection('both')" id="btn-both" class="direction-btn flex flex-col items-center justify-center p-4 border-2 rounded-xl hover:bg-indigo-50 transition border-indigo-500 bg-indigo-50 text-indigo-700">
+                    <button onclick="setDirection('both')" id="btn-both" class="direction-btn flex flex-col items-center justify-center p-4 border-2 rounded-xl hover:bg-blue-50 transition border-blue-500 bg-blue-50 text-blue-700">
                         <span class="font-bold">Keduanya</span>
-                        <span class="text-xs text-indigo-400">(Grid)</span>
+                        <span class="text-xs text-blue-400">(Grid)</span>
                     </button>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div id="colInputGroup">
                         <label class="block text-xs font-bold text-gray-600 mb-1 uppercase">Jumlah Kolom</label>
-                        <input type="number" id="cols" value="1" min="1" class="w-full p-3 border-2 rounded-lg focus:border-indigo-500 outline-none transition">
+                        <input type="number" id="cols" value="1" min="1" class="w-full p-3 border-2 rounded-lg focus:border-blue-500 outline-none transition">
                     </div>
                     <div id="rowInputGroup">
                         <label class="block text-xs font-bold text-gray-600 mb-1 uppercase">Jumlah Baris</label>
-                        <input type="number" id="rows" value="1" min="1" class="w-full p-3 border-2 rounded-lg focus:border-indigo-500 outline-none transition">
+                        <input type="number" id="rows" value="1" min="1" class="w-full p-3 border-2 rounded-lg focus:border-blue-500 outline-none transition">
                     </div>
                 </div>
             </div>
@@ -93,22 +99,37 @@
                         <div id="gridOverlay" class="grid-overlay"></div>
                     </div>
                 </div>
-                <div id="infoBox" class="mt-4 p-4 bg-indigo-50 text-indigo-800 rounded-lg text-sm font-medium"></div>
+                <div id="infoBox" class="mt-4 p-4 bg-blue-50 text-blue-800 rounded-lg text-sm font-medium"></div>
             </div>
 
-            <button onclick="generateCuts()" class="w-full py-4 bg-indigo-600 text-white font-black text-lg rounded-xl shadow-xl hover:bg-indigo-700 transition transform active:scale-95 uppercase tracking-wider">
+            <button onclick="generateCuts()" class="w-full py-4 bg-blue-600 text-white font-black text-lg rounded-xl shadow-xl hover:bg-blue-700 transition transform active:scale-95 uppercase tracking-wider">
                 Potong Gambar Sekarang
             </button>
         </div>
 
-        <div id="resultArea" class="hidden mt-10">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold">Hasil Potongan</h2>
-                <button id="downloadAllBtn" class="px-6 py-2 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 shadow-lg transition">
-                    UNDUH SEMUA (.ZIP)
-                </button>
+        <div id="resultArea" class="hidden mt-10 space-y-10">
+            <div>
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold">Hasil Potongan</h2>
+                    <button id="downloadAllBtn" class="px-6 py-2 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 shadow-lg transition">
+                        UNDUH SEMUA (.ZIP)
+                    </button>
+                </div>
+                <div id="resultsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
             </div>
-            <div id="resultsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+
+            <div class="glass-panel p-6 rounded-2xl border border-gray-200 bg-gray-900 text-gray-100 shadow-2xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold flex items-center gap-2">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        JSON RESULT
+                    </h3>
+                    <button onclick="copyJSON()" class="text-xs bg-gray-700 hover:bg-blue-600 px-4 py-2 rounded-lg transition font-bold tracking-widest uppercase">
+                        <span id="copyText">Salin Kode JSON</span>
+                    </button>
+                </div>
+                <pre id="jsonOutput" class="text-[11px] md:text-[13px] leading-relaxed overflow-auto max-h-[500px] bg-black p-5 rounded-xl font-mono text-blue-300"></pre>
+            </div>
         </div>
     </div>
 
@@ -135,7 +156,7 @@
                 if (this.opacity <= 0) return;
                 bgCtx.beginPath();
                 bgCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                bgCtx.strokeStyle = `rgba(99, 102, 241, ${this.opacity})`;
+                bgCtx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
                 bgCtx.lineWidth = 2;
                 bgCtx.stroke();
             }
@@ -175,11 +196,11 @@
                 bgCtx.translate(this.x, this.y);
                 bgCtx.rotate(this.angle);
                 bgCtx.scale(this.size, this.size);
-                bgCtx.fillStyle = '#818cf8';
+                bgCtx.fillStyle = '#64748b'; 
                 bgCtx.beginPath(); bgCtx.ellipse(0, 0, 42, 12, 0, 0, Math.PI * 2); bgCtx.fill();
                 bgCtx.beginPath(); bgCtx.moveTo(-5, -10); bgCtx.quadraticCurveTo(-15, -25, -22, -4); bgCtx.fill();
                 bgCtx.beginPath(); bgCtx.moveTo(-38, 0); bgCtx.lineTo(-55, -12); bgCtx.lineTo(-55, 12); bgCtx.closePath(); bgCtx.fill();
-                bgCtx.fillStyle = '#e0e7ff';
+                bgCtx.fillStyle = '#f1f5f9';
                 bgCtx.beginPath(); bgCtx.ellipse(5, 4, 30, 6, 0, 0, Math.PI * 2); bgCtx.fill();
                 bgCtx.restore();
             }
@@ -226,11 +247,13 @@
         const infoBox = document.getElementById('infoBox');
         
         let originalImg = null;
+        let originalFileName = "";
         let mode = 'both'; 
 
         imageInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
+            originalFileName = file.name;
 
             const reader = new FileReader();
             reader.onload = function(event) {
@@ -248,26 +271,20 @@
         function setDirection(newMode) {
             mode = newMode;
             document.querySelectorAll('.direction-btn').forEach(btn => {
-                btn.classList.remove('border-indigo-500', 'bg-indigo-50', 'text-indigo-700');
+                btn.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-700');
                 btn.classList.add('border-gray-100');
             });
-            document.getElementById(`btn-${newMode}`).classList.add('border-indigo-500', 'bg-indigo-50', 'text-indigo-700');
+            document.getElementById(`btn-${newMode}`).classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700');
 
             if (mode === 'horizontal') {
                 rowsInput.value = 1;
-                rowsInput.parentElement.style.opacity = '0.3';
-                colsInput.parentElement.style.opacity = '1';
                 rowsInput.disabled = true;
                 colsInput.disabled = false;
             } else if (mode === 'vertical') {
                 colsInput.value = 1;
-                colsInput.parentElement.style.opacity = '0.3';
-                rowsInput.parentElement.style.opacity = '1';
                 colsInput.disabled = true;
                 rowsInput.disabled = false;
             } else {
-                colsInput.parentElement.style.opacity = '1';
-                rowsInput.parentElement.style.opacity = '1';
                 colsInput.disabled = false;
                 rowsInput.disabled = false;
             }
@@ -278,33 +295,32 @@
             if (!originalImg) return;
             const c = parseInt(colsInput.value) || 1;
             const r = parseInt(rowsInput.value) || 1;
-
             gridOverlay.innerHTML = '';
             for (let i = 1; i < c; i++) {
-                const line = document.createElement('div');
-                line.className = 'grid-line';
-                line.style.left = `${(i / c) * 100}%`;
-                line.style.top = '0'; line.style.width = '2px'; line.style.height = '100%';
-                gridOverlay.appendChild(line);
+                const l = document.createElement('div'); l.className = 'grid-line';
+                l.style.left = `${(i/c)*100}%`; l.style.top = '0'; l.style.width = '2px'; l.style.height = '100%';
+                gridOverlay.appendChild(l);
             }
             for (let i = 1; i < r; i++) {
-                const line = document.createElement('div');
-                line.className = 'grid-line';
-                line.style.top = `${(i / r) * 100}%`;
-                line.style.left = '0'; line.style.height = '2px'; line.style.width = '100%';
-                gridOverlay.appendChild(line);
+                const l = document.createElement('div'); l.className = 'grid-line';
+                l.style.top = `${(i/r)*100}%`; l.style.left = '0'; l.style.height = '2px'; l.style.width = '100%';
+                gridOverlay.appendChild(l);
             }
-
             infoBox.innerHTML = `Ukuran Akhir: <b>${c * 1080} x ${r * 1080} px</b>. Terbagi menjadi <b>${c * r} bagian</b> 1080x1080 px.`;
         }
 
         [colsInput, rowsInput].forEach(inp => inp.addEventListener('input', updateGrid));
+
+        function getShortUUID() {
+            return Math.random().toString(36).substring(2, 7);
+        }
 
         async function generateCuts() {
             const cols = parseInt(colsInput.value) || 1;
             const rows = parseInt(rowsInput.value) || 1;
             const resultsGrid = document.getElementById('resultsGrid');
             const resultArea = document.getElementById('resultArea');
+            const jsonOutput = document.getElementById('jsonOutput');
             
             resultsGrid.innerHTML = '';
             resultArea.classList.remove('hidden');
@@ -316,6 +332,26 @@
             canvas.width = 1080;
             canvas.height = 1080;
 
+            const finalData = {
+                metadata: {
+                    nama_file_upload: originalFileName,
+                    dimensi: {
+                        lebar: originalImg.width,
+                        tinggi: originalImg.height
+                    }
+                },
+                konfigurasi_crop: {
+                    mode_dipilih: mode,
+                    pembagian: {
+                        vertikal: rows,
+                        horizontal: cols
+                    },
+                    total_potongan: rows * cols
+                },
+                hasil_potongan: []
+            };
+
+            let counter = 1;
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
                     const sX = (c / cols) * originalImg.width;
@@ -326,39 +362,57 @@
                     ctx.clearRect(0,0,1080,1080);
                     ctx.drawImage(originalImg, sX, sY, sW, sH, 0, 0, 1080, 1080);
                     
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-                    const name = `potongan_${r + 1}_${c + 1}.jpg`;
+                    const webpUrl = canvas.toDataURL('image/webp', 0.9);
+                    const fileName = `crop_baris${r + 1}_kolom${c + 1}_${getShortUUID()}.webp`;
+
+                    finalData.hasil_potongan.push({
+                        id: counter++,
+                        nama_file: fileName,
+                        ukuran: "1080x1080",
+                        posisi: {
+                            baris: r + 1,
+                            kolom: c + 1
+                        }
+                    });
 
                     const card = document.createElement('div');
-                    card.className = 'bg-white border rounded-xl p-2 shadow-sm flex flex-col items-center';
-                    
-                    const img = document.createElement('img');
-                    img.src = dataUrl;
-                    img.className = 'w-full h-auto rounded-lg mb-2';
-
-                    const btnDl = document.createElement('a');
-                    btnDl.href = dataUrl;
-                    btnDl.download = name;
-                    btnDl.innerText = "Unduh";
-                    btnDl.className = "text-[10px] bg-indigo-100 text-indigo-700 px-3 py-1 rounded font-bold hover:bg-indigo-200 transition mb-1";
-
-                    card.appendChild(img);
-                    card.appendChild(btnDl);
+                    card.className = 'bg-white border p-2 rounded-xl shadow-sm flex flex-col items-center';
+                    card.innerHTML = `
+                        <img src="${webpUrl}" class="w-full h-auto rounded-lg mb-2">
+                        <div class="text-[9px] font-mono text-gray-400 truncate mb-1 px-1">${fileName}</div>
+                        <a href="${webpUrl}" download="${fileName}" class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded font-bold hover:bg-blue-200 transition mb-1">Unduh</a>
+                    `;
                     resultsGrid.appendChild(card);
 
-                    const b64 = dataUrl.replace(/^data:image\/(png|jpeg);base64,/, "");
-                    zip.file(name, b64, {base64: true});
+                    const b64 = webpUrl.split(',')[1];
+                    zip.file(fileName, b64, {base64: true});
                 }
             }
+
+            jsonOutput.textContent = JSON.stringify(finalData, null, 2);
 
             document.getElementById('downloadAllBtn').onclick = function() {
                 zip.generateAsync({type:"blob"}).then(blob => {
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(blob);
-                    link.download = "grid_potongan.zip";
+                    link.download = `result_${originalFileName.split('.')[0]}.zip`;
                     link.click();
                 });
             };
+        }
+
+        function copyJSON() {
+            const text = document.getElementById('jsonOutput').textContent;
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            const btn = document.getElementById('copyText');
+            btn.innerText = "BERHASIL DISALIN!";
+            setTimeout(() => btn.innerText = "Salin Kode JSON", 2000);
         }
     </script>
 </body>
