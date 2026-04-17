@@ -3,77 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random code</title>
+    <title>Random Code</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body, html {
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: white;
-            min-height: 100vh;
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            background-color: #020111;
+            font-family: 'Poppins', sans-serif;
         }
 
-        .content {
-            position: relative;
-            z-index: 10;
-            padding: 40px;
-        }
-
-        .nav-back {
-            text-decoration: none;
-            color: #0077be;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 30px;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        li {
-            margin-bottom: 15px;
-            padding-left: 20px;
-            position: relative;
-        }
-
-        li::before {
-            content: "•";
-            color: #0077be;
-            font-size: 20px;
-            position: absolute;
+        #bgCanvas {
+            position: fixed;
+            top: 0;
             left: 0;
-            top: -2px;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
         }
 
-        li a {
-            text-decoration: none;
-            color: #444;
-            font-size: 18px;
-            transition: color 0.2s;
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
         }
 
-        li a:hover { color: #0077be; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
 
-        #status-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #666;
-            font-size: 16px;
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+        }
+
+        .glass-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .glass-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
 
         .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(0, 119, 190, 0.2);
-            border-top-color: #0077be;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #fff;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -82,42 +79,61 @@
             to { transform: rotate(360deg); }
         }
 
-        .btn-retry {
-            background: none;
-            border: none;
-            color: #0077be;
-            text-decoration: underline;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 0;
-            font-family: inherit;
-        }
-
-        #oceanCanvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
+        .text-glow {
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
-<body>
+<body class="text-white">
 
-    <div class="content">
-        <a href="../" class="nav-back">./kembali</a>
-        <h1>Random code</h1>
+    <canvas id="bgCanvas"></canvas>
+
+    <main class="relative z-10 min-h-screen flex flex-col items-center px-4 py-10 sm:py-16">
         
-        <div id="status-container">
+        <div class="glass-panel w-full max-w-4xl rounded-3xl p-6 sm:p-10 transition-all duration-500">
+            
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-6 border-b border-white/10 pb-6">
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-white/10 rounded-xl shadow-inner">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-300 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-glow">Random Code</h1>
+                        <p class="text-sm text-white/60 mt-1 font-light">Eksplorasi file di dalam repositori</p>
+                    </div>
+                </div>
+                
+                <a href="../" class="glass-btn flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Kembali
+                </a>
+            </div>
+
+            <div id="status-container" class="flex flex-col items-center justify-center py-12 gap-4"></div>
+
+            <div id="file-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+            <div id="pagination-container" class="mt-8 flex justify-center items-center gap-6 hidden">
+                <button id="prevBtn" onclick="changePage(-1)" class="glass-btn p-3 rounded-full transition-all duration-300 shadow-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <span id="pageIndicator" class="font-medium text-white/80 tracking-widest text-sm"></span>
+                <button id="nextBtn" onclick="changePage(1)" class="glass-btn p-3 rounded-full transition-all duration-300 shadow-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+
         </div>
 
-        <ul id="file-list">
-        </ul>
-    </div>
-
-    <canvas id="oceanCanvas"></canvas>
+    </main>
 
     <script>
         const username = "wumbo123"; 
@@ -125,141 +141,321 @@
         const folderPath = "0"; 
 
         const statusContainer = document.getElementById('status-container');
-        const fileList = document.getElementById('file-list');
+        const fileGrid = document.getElementById('file-grid');
+        const paginationContainer = document.getElementById('pagination-container');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageIndicator = document.getElementById('pageIndicator');
+
+        let allFiles = [];
+        let currentPage = 1;
+        const itemsPerPage = 5;
 
         async function fetchDocs() {
-            fileList.innerHTML = '';
+            fileGrid.innerHTML = '';
+            paginationContainer.classList.add('hidden');
             statusContainer.innerHTML = `
                 <div class="spinner"></div>
-                <span>Menghubungkan ke daftar list repositori...</span>
+                <span class="text-white/80 font-light tracking-wide">Menghubungkan ke repositori...</span>
             `;
 
             try {
                 const response = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${folderPath}`);
-                
                 if (!response.ok) throw new Error("Gagal mengambil data");
 
                 const files = await response.json();
-                
                 statusContainer.innerHTML = '';
 
-                const htmlFiles = files.filter(f => f.name.endsWith('.html') && f.name !== 'index.html');
+                allFiles = files.filter(f => 
+                    (f.name.endsWith('.html') || f.name.endsWith('.json')) && f.name !== 'index.html'
+                );
                 
-                if (htmlFiles.length === 0) {
-                    fileList.innerHTML = '<li>Tidak ada dokumen ditemukan di folder ini.</li>';
+                if (allFiles.length === 0) {
+                    statusContainer.innerHTML = `
+                        <div class="text-white/70 italic p-8 text-center bg-white/5 rounded-2xl w-full border border-white/10">
+                            Tidak ada file HTML atau JSON ditemukan di folder ini.
+                        </div>`;
                     return;
                 }
 
-                htmlFiles.forEach(file => {
-                    const li = document.createElement('li');
-                    const a = document.createElement('a');
-                    a.href = file.name;
-                    a.textContent = file.name.replace('.html', '');
-                    li.appendChild(a);
-                    fileList.appendChild(li);
-                });
+                renderGrid();
 
             } catch (e) {
                 statusContainer.innerHTML = `
-                    <span>Gagal memuat daftar, </span>
-                    <button class="btn-retry" onclick="fetchDocs()">coba lagi ?</button>
+                    <div class="flex flex-col items-center bg-red-500/10 border border-red-500/30 p-6 rounded-2xl">
+                        <span class="text-red-200 mb-4">Gagal memuat daftar dari GitHub.</span>
+                        <button class="glass-btn px-6 py-2 rounded-full text-sm hover:bg-white/20 transition-all" onclick="fetchDocs()">Coba Lagi</button>
+                    </div>
                 `;
             }
         }
 
+        function renderGrid() {
+            fileGrid.innerHTML = '';
+            
+            const totalPages = Math.ceil(allFiles.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const currentFiles = allFiles.slice(startIndex, endIndex);
+
+            currentFiles.forEach(file => {
+                const isJson = file.name.endsWith('.json');
+                const cleanName = file.name.replace(/\.(html|json)$/, '');
+                
+                const a = document.createElement('a');
+                a.href = file.name;
+                a.className = 'glass-card flex items-center p-5 rounded-2xl transition-all duration-300 group outline-none';
+                
+                let iconSvg = '';
+                if (isJson) {
+                    iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-yellow-300 drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>`;
+                } else {
+                    iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-blue-300 drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>`;
+                }
+
+                a.innerHTML = `
+                    <div class="p-3 bg-white/10 rounded-xl mr-4 group-hover:bg-white/20 transition-colors">
+                        ${iconSvg}
+                    </div>
+                    <div class="flex flex-col overflow-hidden">
+                        <span class="font-semibold text-white/90 truncate text-lg group-hover:text-purple-300 transition-colors">${cleanName}</span>
+                        <span class="text-xs font-medium text-white/50 tracking-wider uppercase mt-1">${isJson ? 'JSON Data' : 'HTML Doc'}</span>
+                    </div>
+                `;
+                fileGrid.appendChild(a);
+            });
+
+            if (totalPages > 1) {
+                paginationContainer.classList.remove('hidden');
+                pageIndicator.innerText = `${currentPage} / ${totalPages}`;
+                prevBtn.disabled = currentPage === 1;
+                nextBtn.disabled = currentPage === totalPages;
+            } else {
+                paginationContainer.classList.add('hidden');
+            }
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(allFiles.length / itemsPerPage);
+            currentPage += direction;
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            renderGrid();
+        }
+
         fetchDocs();
 
-        const canvas = document.getElementById('oceanCanvas');
+        const canvas = document.getElementById('bgCanvas');
         const ctx = canvas.getContext('2d');
-        let width, height, dolphins = [], ripples = [];
+        let width, height;
+        let fishes = [];
+        let splashes = [];
+        let stars = [];
+        let animTime = 0;
+
+        const colorStops = [
+            { t: 0,   skyTop: [2,1,17],     skyBot: [32,18,77],   wave1: [20,20,50], wave2: [10,10,40], wave3: [0,0,30] },
+            { t: 4,   skyTop: [2,1,17],     skyBot: [32,18,77],   wave1: [20,20,50], wave2: [10,10,40], wave3: [0,0,30] },
+            { t: 5.5, skyTop: [32,18,77],   skyBot: [255,81,47],  wave1: [91,18,72], wave2: [42,8,69],  wave3: [25,5,40] },
+            { t: 7,   skyTop: [255,123,0],  skyBot: [255,195,113],wave1: [0,120,180],wave2: [0,80,140], wave3: [0,40,90] },
+            { t: 10,  skyTop: [86,204,242], skyBot: [47,128,237], wave1: [0,168,255],wave2: [0,130,220],wave3: [0,90,180] },
+            { t: 15,  skyTop: [86,204,242], skyBot: [100,160,250],wave1: [0,168,255],wave2: [0,130,220],wave3: [0,90,180] },
+            { t: 17.5,skyTop: [255,81,47],  skyBot: [221,36,118], wave1: [144,28,86],wave2: [91,18,72], wave3: [42,8,69] },
+            { t: 19,  skyTop: [32,18,77],   skyBot: [2,1,17],     wave1: [42,8,69],  wave2: [25,5,40],  wave3: [10,2,20] },
+            { t: 24,  skyTop: [2,1,17],     skyBot: [32,18,77],   wave1: [20,20,50], wave2: [10,10,40], wave3: [0,0,30] }
+        ];
+
+        function getColor(prop, timeOfDay) {
+            let start = colorStops[0], end = colorStops[colorStops.length-1];
+            for(let i=0; i<colorStops.length-1; i++) {
+                if(timeOfDay >= colorStops[i].t && timeOfDay <= colorStops[i+1].t) {
+                    start = colorStops[i];
+                    end = colorStops[i+1];
+                    break;
+                }
+            }
+            let fraction = (end.t === start.t) ? 0 : (timeOfDay - start.t) / (end.t - start.t);
+            let r = Math.round(start[prop][0] + (end[prop][0] - start[prop][0]) * fraction);
+            let g = Math.round(start[prop][1] + (end[prop][1] - start[prop][1]) * fraction);
+            let b = Math.round(start[prop][2] + (end[prop][2] - start[prop][2]) * fraction);
+            return `rgb(${r},${g},${b})`;
+        }
 
         function resize() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
+            stars = [];
+            for(let i=0; i<150; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * (height * 0.7),
+                    size: Math.random() * 1.5,
+                    blinkSpeed: Math.random() * 0.02 + 0.005,
+                    alpha: Math.random()
+                });
+            }
         }
         window.addEventListener('resize', resize);
         resize();
 
-        class Ripple {
-            constructor(x, y) { this.x = x; this.y = y; this.radius = 2; this.opacity = 0.6; }
-            update() { this.radius += 1.5; this.opacity -= 0.01; }
+        class Splash {
+            constructor(x, y) {
+                this.x = x; this.y = y; this.particles = [];
+                for (let i = 0; i < 6; i++) {
+                    this.particles.push({
+                        vx: (Math.random() - 0.5) * 5, vy: -(Math.random() * 3 + 2),
+                        life: 1, size: Math.random() * 3 + 1
+                    });
+                }
+            }
+            update() {
+                this.particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life -= 0.03; });
+                this.particles = this.particles.filter(p => p.life > 0);
+            }
             draw() {
-                if (this.opacity <= 0) return;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.strokeStyle = `rgba(0, 119, 190, ${this.opacity})`;
-                ctx.lineWidth = 2;
-                ctx.stroke();
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                this.particles.forEach(p => {
+                    ctx.beginPath(); ctx.arc(this.x + p.x, this.y + p.y, p.size, 0, Math.PI * 2); ctx.fill();
+                });
             }
         }
 
-        class Dolphin {
-            constructor() { this.reset(); }
-            reset() {
-                this.side = Math.random() > 0.5 ? 1 : -1;
-                this.x = this.side === 1 ? -150 : width + 150;
-                this.waterLevel = height * 0.85;
-                this.y = this.waterLevel + 100;
-                this.vx = (3 + Math.random() * 4) * this.side;
-                this.vy = -(15 + Math.random() * 8);
+        class JumpingFish {
+            constructor() {
+                this.x = Math.random() * width;
+                this.waterLevel = height * 0.7;
+                this.y = this.waterLevel + 50; 
+                this.vx = (Math.random() - 0.5) * 6; 
+                this.vy = -(10 + Math.random() * 5); 
                 this.gravity = 0.4;
-                this.size = 0.5 + Math.random() * 0.3;
                 this.angle = 0;
-                this.inAir = false;
-                this.hasSplat = false;
+                this.size = 0.6 + Math.random() * 0.4;
+                this.hasSplashed = false;
             }
             update() {
                 this.x += this.vx; this.y += this.vy; this.vy += this.gravity;
                 this.angle = Math.atan2(this.vy, this.vx);
-                if (this.y < this.waterLevel) { this.inAir = true; } 
-                else if (this.inAir && this.y >= this.waterLevel) {
-                    if (!this.hasSplat) { ripples.push(new Ripple(this.x, this.waterLevel)); this.hasSplat = true; }
-                    if (this.y > this.waterLevel + 200) this.reset();
+                if (this.y >= this.waterLevel && this.vy > 0 && !this.hasSplashed) {
+                    splashes.push(new Splash(this.x, this.waterLevel));
+                    this.hasSplashed = true;
                 }
-                if (this.x > width + 300 || this.x < -300) this.reset();
             }
             draw() {
                 ctx.save();
-                ctx.translate(this.x, this.y); ctx.rotate(this.angle); ctx.scale(this.side * this.size, this.size);
-                ctx.fillStyle = '#5da2d5';
-                ctx.beginPath(); ctx.ellipse(0, 0, 50, 15, 0, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(-5, -12); ctx.quadraticCurveTo(-15, -28, -25, -5); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(-45, 0); ctx.lineTo(-60, -15); ctx.lineTo(-60, 15); ctx.closePath(); ctx.fill();
-                ctx.fillStyle = '#f0f7ff';
-                ctx.beginPath(); ctx.ellipse(5, 5, 35, 8, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.scale(this.size, this.size);
+                
+                ctx.fillStyle = '#0a0a0a'; 
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 15, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(-12, 0); ctx.lineTo(-24, -8); ctx.lineTo(-24, 8);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(-4, -5); ctx.lineTo(0, -12); ctx.lineTo(4, -5);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(-4, 5); ctx.lineTo(0, 10); ctx.lineTo(4, 5);
+                ctx.fill();
                 ctx.restore();
             }
         }
 
-        for (let i = 0; i < 3; i++) {
-            setTimeout(() => dolphins.push(new Dolphin()), i * 2000);
+        function drawWave(yOffset, amplitude, frequency, speed, color) {
+            ctx.beginPath();
+            ctx.moveTo(-100, height);
+            ctx.lineTo(-100, yOffset + Math.sin(animTime * speed) * amplitude);
+            for (let x = -100; x <= width + 100; x += 20) {
+                let y = yOffset + Math.sin(x * frequency + animTime * speed) * amplitude;
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(width + 100, height);
+            ctx.lineTo(-100, height);
+            ctx.fillStyle = color;
+            ctx.fill();
         }
 
-        function drawSea() {
-            let grad = ctx.createLinearGradient(0, height * 0.85, 0, height);
-            grad.addColorStop(0, 'rgba(0, 150, 255, 0.6)');
-            grad.addColorStop(1, 'rgba(0, 80, 150, 0.9)');
-            ctx.beginPath();
-            ctx.moveTo(0, height);
-            ctx.lineTo(0, height * 0.85);
-            for (let i = 0; i <= width; i += 20) {
-                let wave = Math.sin(i * 0.01 + Date.now() * 0.002) * 6;
-                ctx.lineTo(i, height * 0.85 + wave);
+        function drawBackgroundAndCelestialBodies(timeOfDay) {
+            let bgGrad = ctx.createLinearGradient(0, 0, 0, height * 0.7);
+            bgGrad.addColorStop(0, getColor('skyTop', timeOfDay)); 
+            bgGrad.addColorStop(1, getColor('skyBot', timeOfDay)); 
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, width, height);
+
+            let starOpacity = 0;
+            if (timeOfDay < 6) starOpacity = 1 - (timeOfDay / 6);
+            if (timeOfDay > 18) starOpacity = (timeOfDay - 18) / 6;
+            
+            if (starOpacity > 0) {
+                stars.forEach(s => {
+                    s.alpha += s.blinkSpeed;
+                    if(s.alpha > 1 || s.alpha < 0) s.blinkSpeed *= -1;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(s.alpha) * starOpacity})`;
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
             }
-            ctx.lineTo(width, height);
-            ctx.fillStyle = grad;
-            ctx.fill();
+
+            let cx = width / 2;
+            let sunY = height * 0.8 - Math.sin((timeOfDay - 6) / 12 * Math.PI) * (height * 0.65);
+            
+            if (timeOfDay >= 5 && timeOfDay <= 19) {
+                ctx.beginPath();
+                ctx.arc(cx, sunY, 60, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 230, 100, 1)';
+                ctx.shadowBlur = 50;
+                ctx.shadowColor = 'rgba(255, 200, 0, 0.8)';
+                ctx.fill();
+                ctx.shadowBlur = 0; 
+            }
+
+            let moonTime = (timeOfDay + 12) % 24;
+            let moonY = height * 0.8 - Math.sin((moonTime - 6) / 12 * Math.PI) * (height * 0.65);
+            
+            if (timeOfDay < 7 || timeOfDay > 17) {
+                ctx.beginPath();
+                ctx.arc(cx, moonY, 40, 0, Math.PI * 2);
+                ctx.fillStyle = '#f0f0f0';
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
         }
 
         function animate() {
             ctx.clearRect(0, 0, width, height);
-            ripples.forEach((r, i) => { r.update(); r.draw(); if (r.opacity <= 0) ripples.splice(i, 1); });
-            dolphins.forEach(d => { d.update(); d.draw(); });
-            drawSea();
+            
+            const now = new Date();
+            const currentTime = now.getHours() + (now.getMinutes() / 60) + (now.getSeconds() / 3600);
+
+            drawBackgroundAndCelestialBodies(currentTime);
+
+            if (Math.random() < 0.015 && fishes.length < 8) {
+                fishes.push(new JumpingFish());
+            }
+
+            splashes.forEach(s => { s.update(); s.draw(); });
+            splashes = splashes.filter(s => s.particles.length > 0);
+
+            drawWave(height * 0.68, 15, 0.003, 1.5, getColor('wave1', currentTime));
+
+            fishes.forEach(f => { f.update(); f.draw(); });
+            fishes = fishes.filter(f => f.y < height + 100);
+
+            drawWave(height * 0.72, 25, 0.002, 2.0, getColor('wave2', currentTime));
+            drawWave(height * 0.78, 35, 0.0015, 2.5, getColor('wave3', currentTime));
+
+            animTime += 0.02; 
             requestAnimationFrame(animate);
         }
+
         animate();
     </script>
 </body>
 </html>
+
 

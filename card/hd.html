@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HD Image Upscaler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a12 0%, #12121f 50%, #0a0a12 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .back-to-root {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+            border: 1px solid #3d3d5c;
+            color: #a0a0b0;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            z-index: 50;
+        }
+
+        .back-to-root:hover {
+            border-color: #ffd700;
+            color: #ffd700;
+            transform: translateX(-5px);
+        }
+
+        .input-field {
+            background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%);
+            border: 1px solid #2d2d45;
+            color: #e0e0e0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.2);
+            outline: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ffd700 0%, #ff9500 100%);
+            color: #1a1a2e;
+            font-weight: 700;
+            padding: 14px 28px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(255,215,0,0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255,215,0,0.5);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #2a2a4a 0%, #1a1a35 100%);
+            color: #a0a0b0;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: 1px solid #3d3d5c;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: #ffd700;
+            color: #ffd700;
+        }
+
+        .btn-scale {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid #3d3d5c;
+            background: #1a1a2e;
+            color: #a0a0b0;
+        }
+
+        .btn-scale.active {
+            border-color: #ffd700;
+            background: linear-gradient(135deg, #ffd700 0%, #ff9500 100%);
+            color: #1a1a2e;
+        }
+
+        .preview-container {
+            background: #0f0f1a;
+            border: 2px dashed #3d3d5c;
+            border-radius: 16px;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-container img {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 8px;
+        }
+
+        .comparison-slider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #ffd700;
+            cursor: ew-resize;
+            z-index: 10;
+        }
+
+        .comparison-slider::before {
+            content: '↔';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: #ffd700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a1a2e;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .comparison-before, .comparison-after {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .comparison-before {
+            clip-path: inset(0 50% 0 0);
+        }
+
+        .comparison-after {
+            clip-path: inset(0 0 0 50%);
+        }
+
+        .comparison-label {
+            position: absolute;
+            bottom: 16px;
+            padding: 6px 16px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .label-before {
+            left: 16px;
+            color: #ff6b6b;
+        }
+
+        .label-after {
+            right: 16px;
+            color: #4ecdc4;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #3d3d5c;
+            border-top-color: #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <!-- Back to Root Button -->
+    <a href="/" class="back-to-root">
+        <span>←</span>
+        <span>Kembali ke Root</span>
+    </a>
+
+    <div class="max-w-4xl mx-auto my-8">
+        <h1 class="text-3xl font-bold text-center text-yellow-500 mb-8 uppercase tracking-wider">HD Image Upscaler</h1>
+        
+        <!-- Upload Section -->
+        <div class="bg-[#12121f] border border-[#2d2d45] rounded-3xl p-6 sm:p-8 shadow-2xl mb-8">
+            <label class="block text-sm font-bold text-gray-400 uppercase mb-3">Unggah Gambar</label>
+            <input type="file" id="image-input" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:bg-yellow-600 file:text-white file:font-semibold cursor-pointer mb-4">
+            
+            <!-- Scale Options -->
+            <div class="mb-6">
+                <label class="block text-sm font-bold text-gray-400 uppercase mb-3">Pilih Skala</label>
+                <div class="flex gap-4">
+                    <button onclick="setScale(2)" class="btn-scale active flex-1" id="scale-2">
+                        2×
+                    </button>
+                    <button onclick="setScale(4)" class="btn-scale flex-1" id="scale-4">
+                        4×
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="generateHD()" id="btn-generate" class="btn-primary w-full flex items-center justify-center gap-2" disabled>
+                <span>⚡</span>
+                <span>Generate HD</span>
+            </button>
+        </div>
+
+        <!-- Preview Section -->
+        <div id="preview-section" class="hidden fade-in">
+            <div class="bg-[#12121f] border border-[#2d2d45] rounded-3xl p-6 shadow-2xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-300">Preview</h2>
+                    <div class="flex gap-2">
+                        <button onclick="setView('before')" class="btn-secondary text-xs" id="btn-before">Before</button>
+                        <button onclick="setView('after')" class="btn-secondary text-xs" id="btn-after">After</button>
+                        <button onclick="setView('compare')" class="btn-secondary text-xs active" id="btn-compare">Compare</button>
+                    </div>
+                </div>
+
+                <div id="preview-container" class="preview-container">
+                    <!-- Preview images will be inserted here -->
+                </div>
+
+                <div class="flex justify-between items-center mt-4">
+                    <div class="text-sm text-gray-500">
+                        <span id="original-size">Original: -</span>
+                        <span class="mx-2">→</span>
+                        <span id="hd-size" class="text-yellow-500 font-semibold">HD: -</span>
+                    </div>
+                    <button onclick="downloadHD()" id="btn-download" class="btn-primary text-sm px-6 py-3 flex items-center gap-2">
+                        <span>⬇</span>
+                        <span>Download HD</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner mb-4"></div>
+        <p class="text-yellow-500 font-bold text-lg" id="loading-text">Memproses gambar...</p>
+        <p class="text-gray-500 text-sm mt-2" id="loading-sub">Mohon tunggu sebentar</p>
+    </div>
+
+    <script>
+        let currentScale = 2;
+        let currentView = 'compare';
+        let originalImage = null;
+        let hdImageData = null;
+        let sliderPosition = 50;
+
+        function setScale(scale) {
+            currentScale = scale;
+            document.querySelectorAll('.btn-scale').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`scale-${scale}`).classList.add('active');
+        }
+
+        function setView(view) {
+            currentView = view;
+            document.querySelectorAll('[id^="btn-"]').forEach(btn => {
+                if (btn.id.startsWith('btn-') && btn.id !== 'btn-generate' && btn.id !== 'btn-download') {
+                    btn.classList.remove('active');
+                }
+            });
+            document.getElementById(`btn-${view}`).classList.add('active');
+            updatePreview();
+        }
+
+        document.getElementById('image-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    originalImage = new Image();
+                    originalImage.onload = function() {
+                        document.getElementById('original-size').textContent = `Original: ${originalImage.width}×${originalImage.height}`;
+                        document.getElementById('btn-generate').disabled = false;
+                        document.getElementById('preview-section').classList.add('hidden');
+                    };
+                    originalImage.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        async function generateHD() {
+            if (!originalImage) return;
+
+            const loading = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            const loadingSub = document.getElementById('loading-sub');
+            
+            loading.classList.remove('hidden');
+            loadingText.textContent = 'Memproses gambar...';
+            loadingSub.textContent = `Upscaling ${currentScale}×`;
+
+            await new Promise(r => setTimeout(r, 500));
+
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = originalImage.width * currentScale;
+                canvas.height = originalImage.height * currentScale;
+                
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
+                
+                hdImageData = canvas.toDataURL('image/png');
+                
+                document.getElementById('hd-size').textContent = `HD: ${canvas.width}×${canvas.height}`;
+                
+                updatePreview();
+                document.getElementById('preview-section').classList.remove('hidden');
+                
+                loading.classList.add('hidden');
+            } catch (error) {
+                loading.classList.add('hidden');
+                alert('Error processing image: ' + error.message);
+            }
+        }
+
+        function updatePreview() {
+            const container = document.getElementById('preview-container');
+            
+            if (currentView === 'before') {
+                container.innerHTML = `
+                    <img src="${originalImage.src}" alt="Before">
+                    <span class="comparison-label label-before">Before</span>
+                `;
+            } else if (currentView === 'after') {
+                container.innerHTML = `
+                    <img src="${hdImageData}" alt="After">
+                    <span class="comparison-label label-after">After</span>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="comparison-before">
+                        <img src="${originalImage.src}" alt="Before">
+                    </div>
+                    <div class="comparison-after">
+                        <img src="${hdImageData}" alt="After">
+                    </div>
+                    <div class="comparison-slider" id="slider" style="left: 50%;"></div>
+                    <span class="comparison-label label-before">Before</span>
+                    <span class="comparison-label label-after">After</span>
+                `;
+                initSlider();
+            }
+        }
+
+        function initSlider() {
+            const slider = document.getElementById('slider');
+            const container = document.getElementById('preview-container');
+            
+            slider.addEventListener('mousedown', startDrag);
+            slider.addEventListener('touchstart', startDrag);
+            
+            function startDrag(e) {
+                e.preventDefault();
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('touchmove', drag);
+                document.addEventListener('mouseup', stopDrag);
+                document.addEventListener('touchend', stopDrag);
+            }
+            
+            function drag(e) {
+                const rect = container.getBoundingClientRect();
+                let x = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                sliderPosition = Math.max(0, Math.min(100, ((x - rect.left) / rect.width) * 100));
+                slider.style.left = sliderPosition + '%';
+                
+                const before = container.querySelector('.comparison-before');
+                const after = container.querySelector('.comparison-after');
+                if (before && after) {
+                    before.style.clipPath = `inset(0 ${100 - sliderPosition}% 0 0)`;
+                    after.style.clipPath = `inset(0 0 0 ${sliderPosition}%)`;
+                }
+            }
+            
+            function stopDrag() {
+                document.removeEventListener('mousemove', drag);
+                document.removeEventListener('touchmove', drag);
+                document.removeEventListener('mouseup', stopDrag);
+                document.removeEventListener('touchend', stopDrag);
+            }
+        }
+
+        function downloadHD() {
+            if (!hdImageData) return;
+            
+            const link = document.createElement('a');
+            link.download = `HD_${currentScale}x_${Date.now()}.png`;
+            link.href = hdImageData;
+            link.click();
+        }
+    </script>
+</body>
+</html>

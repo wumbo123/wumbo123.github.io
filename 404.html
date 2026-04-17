@@ -3,235 +3,298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404</title>
+    <title>404 - Tidak Ditemukan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: white;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #1e293b;
             overflow: hidden;
+            background-color: #020111;
+            font-family: 'Poppins', sans-serif;
         }
 
-        #oceanCanvas {
-            position: absolute;
+        #bgCanvas {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
+            z-index: 0;
+            pointer-events: none;
         }
 
-        .container {
-            text-align: center;
-            padding: 20px;
-            width: 90%;
-            max-width: 450px;
-            z-index: 10;
-            position: relative;
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.4);
         }
 
-        #error-content {
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(4px);
-            padding: 30px 24px;
-            border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.05);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+        .glass-btn {
+            background: rgba(14, 165, 233, 0.15);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(14, 165, 233, 0.3);
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.15);
+        }
+        
+        .glass-btn:hover {
+            background: rgba(14, 165, 233, 0.25);
+            border: 1px solid rgba(14, 165, 233, 0.5);
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.3);
+            transform: translateY(-3px);
         }
 
-        .error-code {
-            font-size: 4.5rem;
-            font-weight: 900;
-            margin: 0;
-            color: #0ea5e9;
-            letter-spacing: -2px;
-            line-height: 1;
-        }
-
-        .message {
-            font-size: 1.25rem;
-            margin: 12px 0;
-            font-weight: 700;
-            line-height: 1.3;
-        }
-
-        .poem {
-            font-style: italic;
-            color: #334155;
-            line-height: 1.6;
-            margin: 24px 0;
-            white-space: pre-line;
-            font-size: 0.95rem;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .back-link {
-            display: block;
-            background-color: #0ea5e9;
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 16px 24px;
-            border-radius: 14px;
-            transition: all 0.2s;
-            font-size: 1rem;
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
-        }
-
-        .back-link:active {
-            background-color: #0284c7;
-            transform: scale(0.97);
-        }
-
-        @media (max-width: 400px) {
-            .error-code { font-size: 3.5rem; }
-            .poem { font-size: 0.9rem; }
+        .text-glow {
+            text-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
 <body>
 
-    <canvas id="oceanCanvas"></canvas>
+    <canvas id="bgCanvas"></canvas>
 
-    <div class="container">
-        <div id="error-content">
-            <h1 class="error-code">404</h1>
-            <p class="message">Sepertinya, kamu ke arah yang salah...</p>
+    <main class="relative z-10 flex min-h-screen flex-col items-center justify-center p-6">
+        <div class="glass-panel rounded-3xl p-10 sm:p-14 w-full max-w-xl flex flex-col items-center text-center transition-all duration-500">
             
-            <div class="poem">"Di luas biru yang tak bertepi,
-Aku melompat mencari sunyi.
-Namun karang tak jua kutemui,
-Seperti halaman yang kau cari di sini.
-
-Kembalilah ke pantai yang terang,
-Jangan biarkan dirimu terombang-ambing arus.
-Samudra ini luas, kawan...
-Dan jalanmu bukan di sini."</div>
-
-            <a href="/" class="back-link">Kembali ke Halaman Utama</a>
+            <h1 class="text-7xl sm:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-300 to-purple-400 mb-2 drop-shadow-xl">
+                404
+            </h1>
+            
+            <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 text-glow">
+                Halaman Tidak Ditemukan
+            </h2>
+            
+            <p class="text-white/70 italic text-sm sm:text-base font-light tracking-wide leading-relaxed mb-10 px-2 sm:px-6">
+                "Kamu telah berlayar terlalu jauh ke koordinat yang kosong. Waktu terus berjalan, namun daratan yang kamu cari tidak ada di sini. Mari kembali sebelum terbawa arus."
+            </p>
+            
+            <a href="/" class="glass-btn text-white font-medium py-3 px-8 rounded-full transition-all duration-300 flex items-center gap-3 tracking-wide">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+                Kembali ke Beranda
+            </a>
         </div>
-    </div>
+    </main>
 
     <script>
-        const canvas = document.getElementById('oceanCanvas');
+        const canvas = document.getElementById('bgCanvas');
         const ctx = canvas.getContext('2d');
+        let width, height;
+        let fishes = [];
+        let splashes = [];
+        let stars = [];
+        let animTime = 0;
 
-        let width, height, dolphins = [], ripples = [];
+        const colorStops = [
+            { t: 0,   skyTop: [2,1,17],     skyBot: [32,18,77],   wave1: [20,20,50], wave2: [10,10,40], wave3: [0,0,30] },
+            { t: 4,   skyTop: [2,1,17],     skyBot: [32,18,77],   wave1: [20,20,50], wave2: [10,10,40], wave3: [0,0,30] },
+            { t: 5.5, skyTop: [32,18,77],   skyBot: [255,81,47],  wave1: [91,18,72], wave2: [42,8,69],  wave3: [25,5,40] },
+            { t: 7,   skyTop: [255,123,0],  skyBot: [255,195,113],wave1: [0,120,180],wave2: [0,80,140], wave3: [0,40,90] },
+            { t: 10,  skyTop: [86,204,242], skyBot: [47,128,237], wave1: [0,168,255],wave2: [0,130,220],wave3: [0,90,180] },
+            { t: 15,  skyTop: [86,204,242], skyBot: [100,160,250],wave1: [0,168,255],wave2: [0,130,220],wave3: [0,90,180] },
+            { t: 17.5,skyTop: [255,81,47],  skyBot: [221,36,118], wave1: [144,28,86],wave2: [91,18,72], wave3: [42,8,69] },
+            { t: 19,  skyTop: [32,18,77],   skyBot: [2,1,17],     wave1: [42,8,69],  wave2: [25,5,40],  wave3: [10,2,20] },
+            { t: 24,  skyTop: [2,1,17],     skyBot: [32,18,77],   wave1: [20,20,50], wave2: [10,10,40], wave3: [0,0,30] }
+        ];
+
+        function getColor(prop, timeOfDay) {
+            let start = colorStops[0], end = colorStops[colorStops.length-1];
+            for(let i=0; i<colorStops.length-1; i++) {
+                if(timeOfDay >= colorStops[i].t && timeOfDay <= colorStops[i+1].t) {
+                    start = colorStops[i];
+                    end = colorStops[i+1];
+                    break;
+                }
+            }
+            let fraction = (end.t === start.t) ? 0 : (timeOfDay - start.t) / (end.t - start.t);
+            let r = Math.round(start[prop][0] + (end[prop][0] - start[prop][0]) * fraction);
+            let g = Math.round(start[prop][1] + (end[prop][1] - start[prop][1]) * fraction);
+            let b = Math.round(start[prop][2] + (end[prop][2] - start[prop][2]) * fraction);
+            return `rgb(${r},${g},${b})`;
+        }
 
         function resize() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
+            stars = [];
+            for(let i=0; i<150; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * (height * 0.7),
+                    size: Math.random() * 1.5,
+                    blinkSpeed: Math.random() * 0.02 + 0.005,
+                    alpha: Math.random()
+                });
+            }
         }
         window.addEventListener('resize', resize);
         resize();
 
-        class Ripple {
+        class Splash {
             constructor(x, y) {
-                this.x = x; this.y = y;
-                this.radius = 2;
-                this.opacity = 0.5;
+                this.x = x; this.y = y; this.particles = [];
+                for (let i = 0; i < 6; i++) {
+                    this.particles.push({
+                        vx: (Math.random() - 0.5) * 5, vy: -(Math.random() * 3 + 2),
+                        life: 1, size: Math.random() * 3 + 1
+                    });
+                }
             }
-            update() { this.radius += 1.8; this.opacity -= 0.012; }
+            update() {
+                this.particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life -= 0.03; });
+                this.particles = this.particles.filter(p => p.life > 0);
+            }
             draw() {
-                if (this.opacity <= 0) return;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.strokeStyle = `rgba(14, 165, 233, ${this.opacity})`;
-                ctx.lineWidth = 2;
-                ctx.stroke();
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                this.particles.forEach(p => {
+                    ctx.beginPath(); ctx.arc(this.x + p.x, this.y + p.y, p.size, 0, Math.PI * 2); ctx.fill();
+                });
             }
         }
 
-        class Dolphin {
-            constructor() { this.reset(); }
-            reset() {
-                this.side = Math.random() > 0.5 ? 1 : -1;
-                this.x = this.side === 1 ? -120 : width + 120;
-                this.waterLevel = height * 0.85; 
-                this.y = this.waterLevel + 50;
-                this.vx = (2.5 + Math.random() * 3.5) * this.side;
-                this.vy = -(14 + Math.random() * 6);
-                this.gravity = 0.38;
-                this.size = 0.5 + Math.random() * 0.25;
+        class JumpingFish {
+            constructor() {
+                this.x = Math.random() * width;
+                this.waterLevel = height * 0.7;
+                this.y = this.waterLevel + 50; 
+                this.vx = (Math.random() - 0.5) * 6; 
+                this.vy = -(10 + Math.random() * 5); 
+                this.gravity = 0.4;
                 this.angle = 0;
-                this.inAir = false;
-                this.hasSplat = false;
+                this.size = 0.6 + Math.random() * 0.4;
+                this.hasSplashed = false;
             }
             update() {
                 this.x += this.vx; this.y += this.vy; this.vy += this.gravity;
                 this.angle = Math.atan2(this.vy, this.vx);
-                if (this.y < this.waterLevel) {
-                    this.inAir = true;
-                } else if (this.inAir && this.y >= this.waterLevel) {
-                    if (!this.hasSplat) {
-                        ripples.push(new Ripple(this.x, this.waterLevel));
-                        this.hasSplat = true;
-                    }
-                    if (this.y > this.waterLevel + 150) this.reset();
+                if (this.y >= this.waterLevel && this.vy > 0 && !this.hasSplashed) {
+                    splashes.push(new Splash(this.x, this.waterLevel));
+                    this.hasSplashed = true;
                 }
-                if (this.x > width + 300 || this.x < -300) this.reset();
             }
             draw() {
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.angle);
                 ctx.scale(this.size, this.size);
-                ctx.fillStyle = '#5da2d5';
-                ctx.beginPath(); ctx.ellipse(0, 0, 42, 13, 0, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(-5, -10); ctx.quadraticCurveTo(-15, -25, -22, -4); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(-38, 0); ctx.lineTo(-55, -12); ctx.lineTo(-55, 12); ctx.closePath(); ctx.fill();
-                ctx.fillStyle = '#f0f7ff';
-                ctx.beginPath(); ctx.ellipse(5, 4, 30, 7, 0, 0, Math.PI * 2); ctx.fill();
+                
+                ctx.fillStyle = '#0a0a0a'; 
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 15, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(-12, 0); ctx.lineTo(-24, -8); ctx.lineTo(-24, 8);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(-4, -5); ctx.lineTo(0, -12); ctx.lineTo(4, -5);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(-4, 5); ctx.lineTo(0, 10); ctx.lineTo(4, 5);
+                ctx.fill();
                 ctx.restore();
             }
         }
 
-        function drawSea() {
-            let grad = ctx.createLinearGradient(0, height * 0.85, 0, height);
-            grad.addColorStop(0, 'rgba(14, 165, 233, 0.4)');
-            grad.addColorStop(1, 'rgba(2, 132, 199, 0.7)');
+        function drawWave(yOffset, amplitude, frequency, speed, color) {
             ctx.beginPath();
             ctx.moveTo(0, height);
-            ctx.lineTo(0, height * 0.85);
-            for (let i = 0; i <= width; i += 20) {
-                let wave = Math.sin(i * 0.01 + Date.now() * 0.002) * 6;
-                ctx.lineTo(i, height * 0.85 + wave);
+            ctx.lineTo(0, yOffset + Math.sin(animTime * speed) * amplitude);
+            for (let x = 0; x <= width + 40; x += 20) {
+                let y = yOffset + Math.sin(x * frequency + animTime * speed) * amplitude;
+                ctx.lineTo(x, y);
             }
-            ctx.lineTo(width, height);
-            ctx.fillStyle = grad;
+            ctx.lineTo(width + 40, height);
+            ctx.lineTo(0, height);
+            ctx.fillStyle = color;
             ctx.fill();
         }
 
-        function initDolphins() {
-            for (let i = 0; i < 3; i++) {
-                setTimeout(() => {
-                    dolphins.push(new Dolphin());
-                }, i * 1800);
+        function drawBackgroundAndCelestialBodies(timeOfDay) {
+            let bgGrad = ctx.createLinearGradient(0, 0, 0, height * 0.7);
+            bgGrad.addColorStop(0, getColor('skyTop', timeOfDay)); 
+            bgGrad.addColorStop(1, getColor('skyBot', timeOfDay)); 
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, width, height);
+
+            let starOpacity = 0;
+            if (timeOfDay < 6) starOpacity = 1 - (timeOfDay / 6);
+            if (timeOfDay > 18) starOpacity = (timeOfDay - 18) / 6;
+            
+            if (starOpacity > 0) {
+                stars.forEach(s => {
+                    s.alpha += s.blinkSpeed;
+                    if(s.alpha > 1 || s.alpha < 0) s.blinkSpeed *= -1;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(s.alpha) * starOpacity})`;
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            let cx = width / 2;
+            let sunY = height * 0.8 - Math.sin((timeOfDay - 6) / 12 * Math.PI) * (height * 0.65);
+            
+            if (timeOfDay >= 5 && timeOfDay <= 19) {
+                ctx.beginPath();
+                ctx.arc(cx, sunY, 60, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 230, 100, 1)';
+                ctx.shadowBlur = 50;
+                ctx.shadowColor = 'rgba(255, 200, 0, 0.8)';
+                ctx.fill();
+                ctx.shadowBlur = 0; 
+            }
+
+            let moonTime = (timeOfDay + 12) % 24;
+            let moonY = height * 0.8 - Math.sin((moonTime - 6) / 12 * Math.PI) * (height * 0.65);
+            
+            if (timeOfDay < 7 || timeOfDay > 17) {
+                ctx.beginPath();
+                ctx.arc(cx, moonY, 40, 0, Math.PI * 2);
+                ctx.fillStyle = '#f0f0f0';
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+                ctx.fill();
+                ctx.shadowBlur = 0;
             }
         }
 
         function animate() {
             ctx.clearRect(0, 0, width, height);
-            ripples.forEach((r, i) => { 
-                r.update(); r.draw(); 
-                if (r.opacity <= 0) ripples.splice(i, 1); 
-            });
-            dolphins.forEach(d => { d.update(); d.draw(); });
-            drawSea();
+            
+            const now = new Date();
+            const currentTime = now.getHours() + (now.getMinutes() / 60) + (now.getSeconds() / 3600);
+
+            drawBackgroundAndCelestialBodies(currentTime);
+
+            if (Math.random() < 0.015 && fishes.length < 8) {
+                fishes.push(new JumpingFish());
+            }
+
+            splashes.forEach(s => { s.update(); s.draw(); });
+            splashes = splashes.filter(s => s.particles.length > 0);
+
+            drawWave(height * 0.68, 15, 0.003, 1.5, getColor('wave1', currentTime));
+
+            fishes.forEach(f => { f.update(); f.draw(); });
+            fishes = fishes.filter(f => f.y < height + 100);
+
+            drawWave(height * 0.72, 25, 0.002, 2.0, getColor('wave2', currentTime));
+            drawWave(height * 0.78, 35, 0.0015, 2.5, getColor('wave3', currentTime));
+
+            animTime += 0.02; 
             requestAnimationFrame(animate);
         }
 
-        initDolphins();
         animate();
     </script>
 </body>
 </html>
+
 

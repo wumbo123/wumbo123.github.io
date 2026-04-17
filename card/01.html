@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Maker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container { max-width: 360px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 10px; font-size: 1rem; color: #bbb; }
+        
+        .option-section { margin-bottom: 6px; }
+        .option-section h3 { font-size: 0.6rem; color: #555; margin-bottom: 3px; }
+        .option-group { display: flex; gap: 3px; }
+        .option-btn {
+            flex: 1;
+            padding: 5px;
+            border: 2px solid #333;
+            background: #111;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .option-btn.active { border-color: #00ff88; background: #003322; }
+        
+        .preview-box {
+            background: #000;
+            border: 1px solid #222;
+            border-radius: 6px;
+            padding: 4px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 180px;
+        }
+        #previewCanvas {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 3px;
+        }
+        
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+            margin-bottom: 8px;
+        }
+        .upload-slot {
+            aspect-ratio: 1;
+            border: 2px dashed #444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            background: #080808;
+            overflow: hidden;
+        }
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+            border-radius: 50%;
+        }
+        .upload-slot.has-image img { display: block; }
+        .upload-slot .num {
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            font-size: 0.45rem;
+            background: rgba(0,0,0,0.95);
+            padding: 1px 2px;
+            border-radius: 3px;
+        }
+        .upload-slot .plus { font-size: 0.9rem; color: #444; }
+        .upload-slot input { display: none; }
+        
+        .panel {
+            background: #111;
+            border-radius: 5px;
+            padding: 6px;
+            margin-bottom: 5px;
+        }
+        .panel h3 {
+            font-size: 0.55rem;
+            color: #444;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .slider-row { margin-bottom: 3px; }
+        .slider-row label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.55rem;
+            margin-bottom: 1px;
+            color: #666;
+        }
+        .slider-row label span { color: #00ff88; }
+        .slider-row input {
+            width: 100%;
+            height: 3px;
+            -webkit-appearance: none;
+            background: #222;
+            border-radius: 2px;
+            outline: none;
+        }
+        .slider-row input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .color-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 3px;
+            align-items: center;
+        }
+        .color-row label {
+            font-size: 0.55rem;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .color-row input[type="color"] {
+            width: 18px;
+            height: 14px;
+            border: 1px solid #333;
+            border-radius: 2px;
+            cursor: pointer;
+            background: #111;
+            padding: 0;
+        }
+        
+        .circle-btns {
+            display: flex;
+            gap: 2px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .circle-btn {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #333;
+            background: #111;
+            color: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.5rem;
+        }
+        .circle-btn.active { border-color: #00ff88; background: #003322; }
+        
+        .download-btn {
+            width: 100%;
+            padding: 8px;
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Card Maker</h1>
+        
+        <div class="option-section">
+            <h3>Jumlah Circle</h3>
+            <div class="option-group">
+                <button class="option-btn" id="btn6" onclick="setCount(6)">6</button>
+                <button class="option-btn active" id="btn9" onclick="setCount(9)">9</button>
+            </div>
+        </div>
+
+        <div class="option-section">
+            <h3>Ukuran</h3>
+            <div class="option-group">
+                <button class="option-btn" id="btn1" onclick="setSize(1)">1:1</button>
+                <button class="option-btn active" id="btn45" onclick="setSize(4)">4:5</button>
+            </div>
+        </div>
+
+        <div class="preview-box">
+            <canvas id="previewCanvas"></canvas>
+        </div>
+
+        <div class="upload-grid" id="uploadGrid"></div>
+
+        <div class="panel">
+            <h3>Circle Style</h3>
+            <div class="slider-row">
+                <label>Stroke <span id="strokeVal">5</span>px</label>
+                <input type="range" id="stroke" min="0" max="25" value="5">
+            </div>
+            <div class="color-row">
+                <label>Warna Stroke: <input type="color" id="strokeColor" value="#00ff88"></label>
+            </div>
+            <div class="slider-row">
+                <label>Glow <span id="glowVal">15</span>px</label>
+                <input type="range" id="glow" min="0" max="40" value="15">
+            </div>
+            <div class="color-row">
+                <label>Warna Glow: <input type="color" id="glowColor" value="#00ff88"></label>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>Pilih Circle</h3>
+            <div class="circle-btns" id="circleBtns"></div>
+        </div>
+
+        <div class="panel">
+            <h3>Edit Gambar</h3>
+            <div class="slider-row">
+                <label>Brightness <span id="brightnessVal">100</span>%</label>
+                <input type="range" id="brightness" min="0" max="200" value="100">
+            </div>
+            <div class="slider-row">
+                <label>Contrast <span id="contrastVal">100</span>%</label>
+                <input type="range" id="contrast" min="0" max="200" value="100">
+            </div>
+            <div class="slider-row">
+                <label>Blur <span id="blurVal">0</span>px</label>
+                <input type="range" id="blur" min="0" max="10" value="0" step="0.5">
+            </div>
+            <div class="slider-row">
+                <label>Saturation <span id="saturationVal">100</span>%</label>
+                <input type="range" id="saturation" min="0" max="200" value="100">
+            </div>
+            <div class="slider-row">
+                <label>Hue <span id="hueVal">0</span>°</label>
+                <input type="range" id="hue" min="0" max="360" value="0">
+            </div>
+            <div class="slider-row">
+                <label>Zoom <span id="zoomVal">100</span>%</label>
+                <input type="range" id="zoom" min="50" max="200" value="100">
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>Posisi Gambar</h3>
+            <div class="slider-row">
+                <label>Kiri-Kanan <span id="posXVal">50</span>%</label>
+                <input type="range" id="posX" min="0" max="100" value="50">
+            </div>
+            <div class="slider-row">
+                <label>Atas-Bawah <span id="posYVal">50</span>%</label>
+                <input type="range" id="posY" min="0" max="100" value="50">
+            </div>
+        </div>
+
+        <button class="download-btn" onclick="download()">Download</button>
+    </div>
+
+    <script>
+        const state = {
+            count: 9,
+            size: 4,
+            images: {},
+            selectedCircle: 'all',
+            stroke: 5,
+            strokeColor: '#00ff88',
+            glow: 15,
+            glowColor: '#00ff88',
+            brightness: 100,
+            contrast: 100,
+            blur: 0,
+            saturation: 100,
+            hue: 0,
+            zoom: 100,
+            posX: 50,
+            posY: 50,
+            perImage: {}
+        };
+
+        const sliderIds = ['stroke', 'glow', 'brightness', 'contrast', 'blur', 'saturation', 'hue', 'zoom', 'posX', 'posY'];
+        sliderIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', updateAndRender);
+        });
+        document.getElementById('strokeColor')?.addEventListener('input', updateAndRender);
+        document.getElementById('glowColor')?.addEventListener('input', updateAndRender);
+
+        function updateAndRender() {
+            state.stroke = parseInt(document.getElementById('stroke').value);
+            state.strokeColor = document.getElementById('strokeColor').value;
+            state.glow = parseInt(document.getElementById('glow').value);
+            state.glowColor = document.getElementById('glowColor').value;
+            state.brightness = parseInt(document.getElementById('brightness').value);
+            state.contrast = parseInt(document.getElementById('contrast').value);
+            state.blur = parseFloat(document.getElementById('blur').value);
+            state.saturation = parseInt(document.getElementById('saturation').value);
+            state.hue = parseInt(document.getElementById('hue').value);
+            state.zoom = parseInt(document.getElementById('zoom').value);
+            state.posX = parseInt(document.getElementById('posX').value);
+            state.posY = parseInt(document.getElementById('posY').value);
+
+            if (state.selectedCircle !== 'all') {
+                state.perImage[state.selectedCircle] = {
+                    brightness: state.brightness,
+                    contrast: state.contrast,
+                    blur: state.blur,
+                    saturation: state.saturation,
+                    hue: state.hue,
+                    zoom: state.zoom,
+                    posX: state.posX,
+                    posY: state.posY
+                };
+            }
+
+            updateLabels();
+            renderPreview();
+        }
+
+        function updateLabels() {
+            document.getElementById('strokeVal').textContent = state.stroke;
+            document.getElementById('glowVal').textContent = state.glow;
+            document.getElementById('brightnessVal').textContent = state.brightness;
+            document.getElementById('contrastVal').textContent = state.contrast;
+            document.getElementById('blurVal').textContent = state.blur;
+            document.getElementById('saturationVal').textContent = state.saturation;
+            document.getElementById('hueVal').textContent = state.hue;
+            document.getElementById('zoomVal').textContent = state.zoom;
+            document.getElementById('posXVal').textContent = state.posX;
+            document.getElementById('posYVal').textContent = state.posY;
+        }
+
+        function init() {
+            renderUploadSlots();
+            renderCircleBtns();
+            updateLabels();
+            setTimeout(renderPreview, 100);
+        }
+
+        function setCount(n) {
+            document.getElementById('btn6').classList.remove('active');
+            document.getElementById('btn9').classList.remove('active');
+            document.getElementById('btn' + n).classList.add('active');
+            state.count = n;
+            state.images = {};
+            state.perImage = {};
+            resetSliders();
+            renderUploadSlots();
+            renderCircleBtns();
+            setTimeout(renderPreview, 100);
+        }
+
+        function setSize(s) {
+            document.getElementById('btn1').classList.remove('active');
+            document.getElementById('btn45').classList.remove('active');
+            if (s === 1) {
+                document.getElementById('btn1').classList.add('active');
+            } else {
+                document.getElementById('btn45').classList.add('active');
+            }
+            state.size = s;
+            setTimeout(renderPreview, 100);
+        }
+
+        function resetSliders() {
+            state.selectedCircle = 'all';
+            state.brightness = 100;
+            state.contrast = 100;
+            state.blur = 0;
+            state.saturation = 100;
+            state.hue = 0;
+            state.zoom = 100;
+            state.posX = 50;
+            state.posY = 50;
+            state.perImage = {};
+            
+            ['brightness','contrast','blur','saturation','hue','zoom','posX','posY'].forEach(id => {
+                document.getElementById(id).value = id === 'blur' ? 0 : (id === 'posX' || id === 'posY' ? 50 : 100);
+            });
+            updateLabels();
+        }
+
+        function renderUploadSlots() {
+            const grid = document.getElementById('uploadGrid');
+            grid.innerHTML = '';
+            for (let i = 1; i <= state.count; i++) {
+                const div = document.createElement('div');
+                div.className = 'upload-slot' + (state.images[i] ? ' has-image' : '');
+                div.innerHTML = `
+                    <span class="num">${i}</span>
+                    <span class="plus">+</span>
+                    <img src="${state.images[i] || ''}">
+                    <input type="file" accept="image/*">
+                `;
+                div.querySelector('input').onchange = (e) => upload(i, e.target.files[0]);
+                div.onclick = () => div.querySelector('input').click();
+                grid.appendChild(div);
+            }
+        }
+
+        function upload(idx, file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                state.images[idx] = e.target.result;
+                state.perImage[idx] = {
+                    brightness: 100, contrast: 100, blur: 0,
+                    saturation: 100, hue: 0, zoom: 100, posX: 50, posY: 50
+                };
+                renderUploadSlots();
+                setTimeout(renderPreview, 100);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderCircleBtns() {
+            const container = document.getElementById('circleBtns');
+            container.innerHTML = '';
+            
+            const allBtn = document.createElement('button');
+            allBtn.className = 'circle-btn' + (state.selectedCircle === 'all' ? ' active' : '');
+            allBtn.textContent = 'All';
+            allBtn.onclick = () => { state.selectedCircle = 'all'; resetSliders(); renderCircleBtns(); setTimeout(renderPreview, 100); };
+            container.appendChild(allBtn);
+            
+            for (let i = 1; i <= state.count; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'circle-btn' + (state.selectedCircle === i ? ' active' : '');
+                btn.textContent = i;
+                btn.onclick = () => { 
+                    state.selectedCircle = i; 
+                    loadPerImageEdits(i);
+                    renderCircleBtns();
+                    setTimeout(renderPreview, 100);
+                };
+                container.appendChild(btn);
+            }
+        }
+
+        function loadPerImageEdits(idx) {
+            const img = state.perImage[idx] || {
+                brightness: 100, contrast: 100, blur: 0,
+                saturation: 100, hue: 0, zoom: 100, posX: 50, posY: 50
+            };
+            state.brightness = img.brightness;
+            state.contrast = img.contrast;
+            state.blur = img.blur;
+            state.saturation = img.saturation;
+            state.hue = img.hue;
+            state.zoom = img.zoom;
+            state.posX = img.posX;
+            state.posY = img.posY;
+            
+            document.getElementById('brightness').value = img.brightness;
+            document.getElementById('contrast').value = img.contrast;
+            document.getElementById('blur').value = img.blur;
+            document.getElementById('saturation').value = img.saturation;
+            document.getElementById('hue').value = img.hue;
+            document.getElementById('zoom').value = img.zoom;
+            document.getElementById('posX').value = img.posX;
+            document.getElementById('posY').value = img.posY;
+            updateLabels();
+        }
+
+        function loadImage(src) {
+            return new Promise((resolve) => {
+                if (!src) { resolve(null); return; }
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
+                img.src = src;
+            });
+        }
+
+        async function renderPreview() {
+            const canvas = document.getElementById('previewCanvas');
+            await drawCanvas(canvas, true);
+        }
+
+        async function drawCanvas(canvas, isPreview) {
+            const ctx = canvas.getContext('2d');
+            
+            let width, height;
+            const aspectRatio = state.size === 1 ? 1 : 1.25;
+            
+            if (isPreview) {
+                const container = canvas.parentElement;
+                width = container.clientWidth - 8;
+                height = Math.floor(width / aspectRatio);
+                if (height > 180) {
+                    height = 180;
+                    width = Math.floor(height * aspectRatio);
+                }
+                canvas.width = width;
+                canvas.height = height;
+            } else {
+                width = 1080;
+                height = state.size === 1 ? 1080 : 1350;
+                canvas.width = width;
+                canvas.height = height;
+            }
+            
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, width, height);
+            
+            const cols = 3;
+            const rows = state.count === 6 ? 2 : 3;
+            const gap = isPreview ? 3 : 8;
+            const totalWidth = width - gap * 2;
+            const circleSize = Math.floor((totalWidth - gap * (cols - 1)) / cols);
+            const startX = gap;
+            const totalHeight = circleSize * rows + gap * (rows - 1);
+            const startY = Math.floor((height - totalHeight) / 2);
+            
+            for (let i = 0; i < state.count; i++) {
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                const x = startX + col * (circleSize + gap);
+                const y = startY + row * (circleSize + gap);
+                const cx = x + circleSize / 2;
+                const cy = y + circleSize / 2;
+                const r = circleSize / 2;
+                const strokeRadius = r - (isPreview ? 1 : state.stroke / 2);
+                
+                // Draw black circle background
+                ctx.beginPath();
+                ctx.arc(cx, cy, r - 1, 0, Math.PI * 2);
+                ctx.fillStyle = '#000000';
+                ctx.fill();
+                
+                // Draw glow
+                if (state.glow > 0) {
+                    ctx.shadowColor = state.glowColor;
+                    ctx.shadowBlur = isPreview ? state.glow * 0.3 : state.glow;
+                }
+                
+                // Draw stroke
+                if (state.stroke > 0) {
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, strokeRadius, 0, Math.PI * 2);
+                    ctx.strokeStyle = state.strokeColor;
+                    ctx.lineWidth = isPreview ? Math.max(1, state.stroke * 0.2) : state.stroke;
+                    ctx.stroke();
+                }
+                
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                
+                // Draw image
+                const imgSrc = state.images[i + 1];
+                if (imgSrc) {
+                    const perImg = state.perImage[i + 1] || {};
+                    
+                    const bri = state.selectedCircle === 'all' ? state.brightness : (perImg.brightness ?? state.brightness);
+                    const con = state.selectedCircle === 'all' ? state.contrast : (perImg.contrast ?? state.contrast);
+                    const blr = state.selectedCircle === 'all' ? state.blur : (perImg.blur ?? state.blur);
+                    const sat = state.selectedCircle === 'all' ? state.saturation : (perImg.saturation ?? state.saturation);
+                    const hu = state.selectedCircle === 'all' ? state.hue : (perImg.hue ?? state.hue);
+                    const zm = state.selectedCircle === 'all' ? state.zoom : (perImg.zoom ?? state.zoom);
+                    const px = state.selectedCircle === 'all' ? state.posX : (perImg.posX ?? state.posX);
+                    const py = state.selectedCircle === 'all' ? state.posY : (perImg.posY ?? state.posY);
+                    
+                    const img = await loadImage(imgSrc);
+                    if (img) {
+                        ctx.save();
+                        
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, strokeRadius - 1, 0, Math.PI * 2);
+                        ctx.closePath();
+                        ctx.clip();
+                        
+                        const imgSize = circleSize * (zm / 100);
+                        const offsetX = (px - 50) * (imgSize - circleSize) / 50;
+                        const offsetY = (py - 50) * (imgSize - circleSize) / 50;
+                        
+                        ctx.filter = `brightness(${bri}%) contrast(${con}%) saturate(${sat}%) hue-rotate(${hu}deg) blur(${blr}px)`;
+                        ctx.drawImage(img, cx - imgSize / 2 + offsetX, cy - imgSize / 2 + offsetY, imgSize, imgSize);
+                        
+                        ctx.restore();
+                    }
+                }
+            }
+        }
+
+        async function download() {
+            const canvas = document.createElement('canvas');
+            await drawCanvas(canvas, false);
+            const link = document.createElement('a');
+            link.download = 'card.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        init();
+    </script>
+</body>
+</html>

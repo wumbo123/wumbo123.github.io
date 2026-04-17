@@ -1,0 +1,52 @@
+{
+  "metadata": {
+    "uploaded_filename": "IMG_20260328_164656_waifu2x_art_scan_noise1_scale.png",
+    "original_file_size": 2390910,
+    "dimensions": {
+      "width": 1292,
+      "height": 1939
+    },
+    "timestamp": "2026-04-07 17:03:01",
+    "processing_time_ms": 4527
+  },
+  "config": {
+    "mode": "both",
+    "output_format": "webp",
+    "flavor_text": null,
+    "division": {
+      "vertical": 2,
+      "horizontal": 2
+    },
+    "total_pieces": 4
+  },
+  "pieces": [
+    {
+      "id": 1,
+      "filename": "crop_both_row1_col1_hplyxde.webp",
+      "datetime": "2026-04-07 17:03:03",
+      "output_file_size": 98466,
+      "checksum": "UklGRpiAAQBXRUJQVlA4WAoAAAAgAAAANwQANwQASUNDUMgBAA"
+    },
+    {
+      "id": 2,
+      "filename": "crop_both_row1_col2_5p1uyk.webp",
+      "datetime": "2026-04-07 17:03:04",
+      "output_file_size": 50370,
+      "checksum": "UklGRrrEAABXRUJQVlA4WAoAAAAgAAAANwQANwQASUNDUMgBAA"
+    },
+    {
+      "id": 3,
+      "filename": "crop_both_row2_col1_hz0zirq.webp",
+      "datetime": "2026-04-07 17:03:05",
+      "output_file_size": 52092,
+      "checksum": "UklGRnLLAABXRUJQVlA4WAoAAAAgAAAANwQANwQASUNDUMgBAA"
+    },
+    {
+      "id": 4,
+      "filename": "crop_both_row2_col2_83vra.webp",
+      "datetime": "2026-04-07 17:03:06",
+      "output_file_size": 69864,
+      "checksum": "UklGRuAQAQBXRUJQVlA4WAoAAAAgAAAANwQANwQASUNDUMgBAA"
+    }
+  ]
+}

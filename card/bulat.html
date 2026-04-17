@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buat Foto Bulat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        html, body {
+            min-height: 100vh;
+            background: #121212;
+            color: white;
+        }
+        .app-header {
+            padding: 15px 20px;
+            background: #1e1e1e;
+            border-bottom: 1px solid #333;
+            text-align: center;
+        }
+        .app-header h1 {
+            color: #4CAF50;
+            font-size: 1.3rem;
+        }
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .preview-container {
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            background: #000;
+        }
+        #previewCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .controls {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .control-card {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        .control-card h3 {
+            color: #4CAF50;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .upload-box {
+            width: 100%;
+            padding: 30px 20px;
+            background: #2a2a2a;
+            border: 2px dashed #555;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        .upload-box:hover {
+            border-color: #4CAF50;
+        }
+        .upload-box p {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .option-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .radio-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .radio-options label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        input[type="radio"] {
+            accent-color: #4CAF50;
+        }
+        .color-picker-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .color-picker-box label {
+            font-size: 0.9rem;
+        }
+        input[type="color"] {
+            width: 50px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+        }
+        .slider-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .slider-control label {
+            min-width: 80px;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+        .slider-control input[type="range"] {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #444;
+            border-radius: 3px;
+        }
+        .slider-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #4CAF50;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .slider-control .value {
+            min-width: 45px;
+            text-align: right;
+            font-size: 0.8rem;
+            color: #888;
+        }
+        .btn-generate {
+            width: 100%;
+            padding: 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-generate:active {
+            background: #45a049;
+            transform: scale(0.98);
+        }
+        .result-section {
+            display: none;
+            width: 100%;
+            max-width: 500px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .result-section canvas {
+            width: 100%;
+            border-radius: 12px;
+        }
+        .btn-download {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 14px 30px;
+            background: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+        .hidden {
+            display: none;
+        }
+        .info-text {
+            text-align: center;
+            color: #666;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+        .multi-upload-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .multi-upload-item {
+            position: relative;
+            aspect-ratio: 1;
+            background: #2a2a2a;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .multi-upload-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .multi-upload-item .placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+            font-size: 0.8rem;
+        }
+        .multi-upload-item input[type="file"] {
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+        }
+        .size-info {
+            text-align: center;
+            color: #888;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <h1>Buat Foto Bulat</h1>
+    </div>
+
+    <div class="main-content">
+        <div class="preview-container">
+            <canvas id="previewCanvas"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="control-card">
+                <h3>Ukuran Output</h3>
+                <div class="radio-options">
+                    <label>
+                        <input type="radio" name="outputSize" value="1:1" checked>
+                        1:1 (1080×1080)
+                    </label>
+                    <label>
+                        <input type="radio" name="outputSize" value="4:5">
+                        4:5 (1080×1350)
+                    </label>
+                </div>
+            </div>
+
+
+
+            <div class="control-card">
+                <h3>Upload Foto</h3>
+                <div id="uploadGrid" class="multi-upload-grid">
+                    <div class="multi-upload-item">
+                        <div class="placeholder">
+                            <span>Foto 1</span>
+                        </div>
+                        <input type="file" id="photoInput0" accept="image/*">
+                    </div>
+                </div>
+                <p class="info-text" id="uploadInfo"></p>
+            </div>
+
+            <div class="control-card">
+                <h3>Latar Belakang</h3>
+                <div class="option-row">
+<div class="radio-options">
+    <label>
+        <input type="radio" name="bgType" value="default" checked>
+        Hitam
+    </label>
+    <label>
+        <input type="radio" name="bgType" value="color">
+        Putih
+    </label>
+    <label>
+        <input type="radio" name="bgType" value="custom">
+        Custom
+    </label>
+    <label>
+        <input type="radio" name="bgType" value="none">
+        No background
+    </label>
+</div>
+                    <div id="bgColorPicker" class="color-picker-box hidden" style="margin-top: 10px;">
+                        <label>Pilih warna:</label>
+                        <input type="color" id="bgColor" value="#ff69b4">
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-card">
+                <h3>Ukuran Bulatan</h3>
+                <div class="slider-control">
+                    <label>Size</label>
+                    <input type="range" id="circleSize" min="30" max="95" value="80">
+                    <span class="value" id="circleSizeValue">80%</span>
+                </div>
+            </div>
+
+            <div class="control-card">
+                <h3>Posisi Bulatan</h3>
+                <div class="slider-control">
+                    <label>Kiri-Kanan</label>
+                    <input type="range" id="offsetX" min="-50" max="50" value="0">
+                    <span class="value" id="offsetXValue">0</span>
+                </div>
+                <div class="slider-control">
+                    <label>Atas-Bawah</label>
+                    <input type="range" id="offsetY" min="-50" max="50" value="0">
+                    <span class="value" id="offsetYValue">0</span>
+                </div>
+            </div>
+
+            <div class="control-card">
+                <h3>Posisi Gambar</h3>
+                <div class="slider-control">
+                    <label>Kiri-Kanan</label>
+                    <input type="range" id="imgOffsetX" min="-50" max="50" value="0">
+                    <span class="value" id="imgOffsetXValue">0</span>
+                </div>
+                <div class="slider-control">
+                    <label>Atas-Bawah</label>
+                    <input type="range" id="imgOffsetY" min="-50" max="50" value="0">
+                    <span class="value" id="imgOffsetYValue">0</span>
+                </div>
+            </div>
+
+            <div class="control-card">
+                <h3>Efek Foto</h3>
+                <div class="slider-control">
+                    <label>Zoom</label>
+                    <input type="range" id="zoom" min="50" max="200" value="100">
+                    <span class="value" id="zoomValue">100%</span>
+                </div>
+                <div class="slider-control">
+                    <label>Blur</label>
+                    <input type="range" id="blur" min="0" max="20" value="0">
+                    <span class="value" id="blurValue">0</span>
+                </div>
+                <div class="slider-control">
+                    <label>Bright</label>
+                    <input type="range" id="brightness" min="0" max="200" value="100">
+                    <span class="value" id="brightnessValue">100%</span>
+                </div>
+                <div class="slider-control">
+                    <label>Contrast</label>
+                    <input type="range" id="contrast" min="0" max="200" value="100">
+                    <span class="value" id="contrastValue">100%</span>
+                </div>
+                <div class="slider-control">
+                    <label>Saturate</label>
+                    <input type="range" id="saturation" min="0" max="200" value="100">
+                    <span class="value" id="saturationValue">100%</span>
+                </div>
+                <div class="slider-control">
+                    <label>Hue</label>
+                    <input type="range" id="hueRotate" min="0" max="360" value="0">
+                    <span class="value" id="hueRotateValue">0°</span>
+                </div>
+                <div class="slider-control">
+                    <label>Sepia</label>
+                    <input type="range" id="sepia" min="0" max="100" value="0">
+                    <span class="value" id="sepiaValue">0%</span>
+                </div>
+                <div class="slider-control">
+                    <label>Gray</label>
+                    <input type="range" id="grayscale" min="0" max="100" value="0">
+                    <span class="value" id="grayscaleValue">0%</span>
+                </div>
+            </div>
+
+            <div class="control-card">
+                <h3>Stroke</h3>
+                <div class="slider-control">
+                    <label>Tebal</label>
+                    <input type="range" id="strokeWidth" min="0" max="20" value="0">
+                    <span class="value" id="strokeWidthValue">0px</span>
+                </div>
+                <div class="color-picker-box" style="margin-top: 10px;">
+                    <label>Warna:</label>
+                    <input type="color" id="strokeColor" value="#ffffff">
+                </div>
+            </div>
+
+            <div class="control-card">
+                <h3>Stroke Glow</h3>
+                <div class="slider-control">
+                    <label>Intensitas</label>
+                    <input type="range" id="glowIntensity" min="0" max="30" value="0">
+                    <span class="value" id="glowIntensityValue">0</span>
+                </div>
+                <div class="color-picker-box" style="margin-top: 10px;">
+                    <label>Warna:</label>
+                    <input type="color" id="glowColor" value="#ffffff">
+                </div>
+            </div>
+
+            <button class="btn-generate" id="generateBtn">Hasilkan & Unduh</button>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <canvas id="resultCanvas"></canvas>
+            <br>
+            <a class="btn-download" id="downloadBtn" download="foto-bulat.png">Unduh</a>
+        </div>
+    </div>
+
+    <script>
+        const previewCanvas = document.getElementById('previewCanvas');
+        const previewInfo = document.getElementById('uploadInfo');
+        const bgColorPicker = document.getElementById('bgColorPicker');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultSection = document.getElementById('resultSection');
+        const resultCanvas = document.getElementById('resultCanvas');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const uploadGrid = document.getElementById('uploadGrid');
+        const circleCountInfo = document.getElementById('circleCountInfo');
+
+        const sliders = ['circleSize', 'offsetX', 'offsetY', 'imgOffsetX', 'imgOffsetY', 'zoom', 'blur', 'brightness', 'contrast', 'saturation', 'hueRotate', 'sepia', 'grayscale', 'strokeWidth', 'glowIntensity'];
+        
+        let uploadedImages = [];
+        let isRendering = false;
+
+        function createUploadGrid(count) {
+            uploadGrid.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const item = document.createElement('div');
+                item.className = 'multi-upload-item';
+                item.innerHTML = `
+                    <div class="placeholder">
+                        <span>Foto ${i + 1}</span>
+                    </div>
+                    <input type="file" id="photoInput${i}" accept="image/*" data-index="${i}">
+                `;
+                uploadGrid.appendChild(item);
+            }
+
+            uploadGrid.querySelectorAll('input[type="file"]').forEach(input => {
+                input.addEventListener('change', handleMultiUpload);
+            });
+        }
+
+        createUploadGrid(1);
+
+        function handleMultiUpload(e) {
+            const index = parseInt(e.target.dataset.index);
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        uploadedImages[index] = img;
+                        const item = e.target.parentElement;
+                        item.innerHTML = `<img src="${event.target.result}" alt="Foto ${index + 1}">`;
+                        item.innerHTML += `<input type="file" id="photoInput${index}" accept="image/*" data-index="${index}">`;
+                        item.querySelector('input').addEventListener('change', handleMultiUpload);
+                        updatePreview();
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.querySelectorAll('input[name="outputSize"]').forEach(radio => {
+            radio.addEventListener('change', updatePreview);
+        });
+
+        document.querySelectorAll('input[name="bgType"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'custom') {
+                    bgColorPicker.classList.remove('hidden');
+                } else {
+                    bgColorPicker.classList.add('hidden');
+                }
+                updatePreview();
+            });
+        });
+
+        sliders.forEach(id => {
+            const input = document.getElementById(id);
+            const valueLabel = document.getElementById(id + 'Value');
+            input.addEventListener('input', (e) => {
+                if (valueLabel) {
+                    let val = e.target.value;
+                    if (id === 'strokeWidth') {
+                        valueLabel.textContent = val + 'px';
+                    } else if (id === 'circleSize') {
+                        valueLabel.textContent = val + '%';
+                    } else if (id === 'circleCount') {
+                        valueLabel.textContent = val;
+                        circleCountInfo.textContent = `${val} circle - Upload ${val} foto`;
+                        createUploadGrid(parseInt(val));
+                        uploadedImages = [];
+                    } else if (id === 'offsetX' || id === 'offsetY' || id === 'imgOffsetX' || id === 'imgOffsetY' || id === 'blur' || id === 'glowIntensity') {
+                        valueLabel.textContent = val;
+                    } else if (id === 'hueRotate') {
+                        valueLabel.textContent = val + '°';
+                    } else {
+                        valueLabel.textContent = val + '%';
+                    }
+                }
+                updatePreview();
+            });
+        });
+
+        document.getElementById('bgColor').addEventListener('input', updatePreview);
+        document.getElementById('strokeColor').addEventListener('input', updatePreview);
+        document.getElementById('glowColor').addEventListener('input', updatePreview);
+
+        function getEffects() {
+            const bgType = document.querySelector('input[name="bgType"]:checked').value;
+            const outputSize = document.querySelector('input[name="outputSize"]:checked').value;
+            let bgColor = '#000000';
+            if (bgType === 'default') bgColor = '#000000';
+            else if (bgType === 'color') bgColor = '#ffffff';
+            else if (bgType === 'custom') bgColor = document.getElementById('bgColor').value;
+            else if (bgType === 'none') bgColor = 'transparent';
+
+            return {
+                outputSize: outputSize,
+                bgColor: bgColor,
+                circleCount: 1,
+                circleSize: parseInt(document.getElementById('circleSize').value),
+                offsetX: parseInt(document.getElementById('offsetX').value),
+                offsetY: parseInt(document.getElementById('offsetY').value),
+                imgOffsetX: parseInt(document.getElementById('imgOffsetX').value),
+                imgOffsetY: parseInt(document.getElementById('imgOffsetY').value),
+                zoom: parseInt(document.getElementById('zoom').value),
+                blur: parseInt(document.getElementById('blur').value),
+                brightness: parseInt(document.getElementById('brightness').value),
+                contrast: parseInt(document.getElementById('contrast').value),
+                saturation: parseInt(document.getElementById('saturation').value),
+                hueRotate: parseInt(document.getElementById('hueRotate').value),
+                sepia: parseInt(document.getElementById('sepia').value),
+                grayscale: parseInt(document.getElementById('grayscale').value),
+                strokeWidth: parseInt(document.getElementById('strokeWidth').value),
+                strokeColor: document.getElementById('strokeColor').value,
+                glowIntensity: parseInt(document.getElementById('glowIntensity').value),
+                glowColor: document.getElementById('glowColor').value
+            };
+        }
+
+        function getOutputDimensions(sizeType) {
+            if (sizeType === '4:5') {
+                return { width: 1080, height: 1350 };
+            }
+            return { width: 1080, height: 1080 };
+        }
+
+        function renderSingleCircle(ctx, img, effects, centerX, centerY, size) {
+            const circleRadius = (size * effects.circleSize) / 200;
+            const offsetX = (effects.offsetX / 100) * size;
+            const offsetY = (effects.offsetY / 100) * size;
+            
+            const cx = centerX + offsetX;
+            const cy = centerY + offsetY;
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, circleRadius, 0, Math.PI * 2);
+            ctx.fillStyle = effects.bgColor;
+            ctx.fill();
+
+            if (effects.strokeWidth > 0) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, circleRadius + effects.strokeWidth / 2, 0, Math.PI * 2);
+                ctx.strokeStyle = effects.strokeColor;
+                ctx.lineWidth = effects.strokeWidth;
+                ctx.stroke();
+            }
+
+            if (effects.glowIntensity > 0) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, circleRadius + effects.strokeWidth + effects.glowIntensity, 0, Math.PI * 2);
+                ctx.strokeStyle = effects.glowColor;
+                ctx.lineWidth = effects.glowIntensity;
+                ctx.shadowColor = effects.glowColor;
+                ctx.shadowBlur = effects.glowIntensity;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, circleRadius, 0, Math.PI * 2);
+            ctx.clip();
+
+            const imgOffsetX = (effects.imgOffsetX / 100) * size;
+            const imgOffsetY = (effects.imgOffsetY / 100) * size;
+            const zoomFactor = effects.zoom / 100;
+            const scale = (size / Math.min(img.width, img.height)) * zoomFactor;
+            const newWidth = img.width * scale;
+            const newHeight = img.height * scale;
+            const x = cx - newWidth / 2 + imgOffsetX;
+            const y = cy - newHeight / 2 + imgOffsetY;
+
+            const filterString = `
+                blur(${effects.blur}px) 
+                brightness(${effects.brightness}%) 
+                contrast(${effects.contrast}%) 
+                saturate(${effects.saturation}%) 
+                hue-rotate(${effects.hueRotate}deg) 
+                sepia(${effects.sepia}%) 
+                grayscale(${effects.grayscale}%)
+            `.replace(/\s+/g, ' ');
+
+            ctx.filter = filterString;
+            ctx.drawImage(img, x, y, newWidth, newHeight);
+            ctx.restore();
+        }
+
+        function renderCanvas(canvas, ctx, effects) {
+            const dims = getOutputDimensions(effects.outputSize);
+            const size = Math.max(dims.width, dims.height);
+            canvas.width = dims.width;
+            canvas.height = dims.height;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = effects.bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const count = effects.circleCount;
+            const previewSize = 400;
+            
+            if (count === 1 && uploadedImages[0]) {
+                renderSingleCircle(ctx, uploadedImages[0], effects, canvas.width / 2, canvas.height / 2, canvas.width);
+            } else if (count > 1) {
+                const cols = count <= 3 ? count : (count <= 6 ? 3 : 4);
+                const rows = Math.ceil(count / cols);
+                const padding = 40;
+                const gap = 30;
+                
+                const availableWidth = canvas.width - (padding * 2) - ((cols - 1) * gap);
+                const availableHeight = canvas.height - (padding * 2) - ((rows - 1) * gap);
+                
+                const circleSize = Math.min(availableWidth / cols, availableHeight / rows);
+                const radius = circleSize / 2;
+
+                let imgIndex = 0;
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        if (imgIndex >= count) break;
+                        
+                        const centerX = padding + col * (circleSize + gap) + radius;
+                        const centerY = padding + row * (circleSize + gap) + radius;
+                        
+                        if (uploadedImages[imgIndex]) {
+                            renderSingleCircle(ctx, uploadedImages[imgIndex], effects, centerX, centerY, circleSize);
+                        }
+                        imgIndex++;
+                    }
+                }
+            }
+        }
+
+        function updatePreview() {
+            if (isRendering) return;
+            
+            const canvas = previewCanvas;
+            const ctx = canvas.getContext('2d');
+            const effects = getEffects();
+            
+            const size = 400;
+            canvas.width = size;
+            canvas.height = size;
+
+            const dims = getOutputDimensions(effects.outputSize);
+            const aspectRatio = dims.width / dims.height;
+            
+            if (aspectRatio > 1) {
+                canvas.style.width = '100%';
+                canvas.style.height = 'auto';
+            } else {
+                canvas.style.width = 'auto';
+                canvas.style.height = '100%';
+            }
+
+            if (uploadedImages.length > 0 && uploadedImages[0]) {
+                isRendering = true;
+                renderCanvas(canvas, ctx, effects);
+                isRendering = false;
+            } else {
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, size, size);
+            }
+        }
+
+        generateBtn.addEventListener('click', () => {
+            const count = parseInt(document.getElementById('circleCount').value);
+            let allUploaded = true;
+            for (let i = 0; i < count; i++) {
+                if (!uploadedImages[i]) {
+                    allUploaded = false;
+                    break;
+                }
+            }
+
+            if (!allUploaded) {
+                alert('Mohon upload semua foto terlebih dahulu!');
+                return;
+            }
+
+            const canvas = resultCanvas;
+            const ctx = canvas.getContext('2d');
+            const effects = getEffects();
+
+            renderCanvas(canvas, ctx, effects);
+
+            resultSection.style.display = 'block';
+            downloadBtn.href = canvas.toDataURL('image/png');
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
