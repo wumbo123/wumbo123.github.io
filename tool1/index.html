@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Image Tools - Resize & Crop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden; background-color: #020111; }
+        
+        #bgCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.4);
+        }
+        
+        .tab-btn { transition: all 0.2s ease; }
+        .tab-btn.active { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .grid-line { position: absolute; background-color: rgba(255, 255, 255, 0.85); box-shadow: 0 0 3px rgba(0,0,0,0.5); }
+        
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.2s;
+        }
+        .glass-btn:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.25); }
+        
+        .crop-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .crop-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .crop-card img {
+            aspect-ratio: 1;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bgCanvas"></canvas>
+
+    <main class="relative z-10 flex flex-col items-center p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 id="pageTitle" class="text-3xl md:text-4xl font-bold text-white mb-2">Image Tools</h1>
+            <p id="pageDesc" class="text-white/50">Resize & Crop Gambar</p>
+        </header>
+
+        <div class="flex gap-2 mb-8 overflow-x-auto pb-2 w-full max-w-lg">
+            <button onclick="switchTab('resize')" class="tab-btn active flex-1 px-4 py-3 rounded-xl font-bold text-sm uppercase tracking-wide whitespace-nowrap" id="tab-resize">
+                📐 Resize
+            </button>
+            <button onclick="switchTab('crop')" class="tab-btn flex-1 px-4 py-3 rounded-xl font-bold text-sm uppercase tracking-wide whitespace-nowrap bg-white/10 text-white/80" id="tab-crop">
+                ✂️ Crop
+            </button>
+        </div>
+
+        <!-- RESIZE TAB -->
+        <div id="content-resize" class="tab-content active w-full max-w-2xl space-y-6">
+            <div class="glass-panel p-8 rounded-3xl text-center">
+                <label class="block text-sm font-semibold mb-4 text-left text-white/80">1. Unggah Foto</label>
+                <input type="file" id="resize-fileInput" accept="image/*" class="block w-full text-sm text-white/50 file:mr-4 file:py-2.5 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-500/20 file:text-sky-400 hover:file:bg-sky-500/30 cursor-pointer" />
+            </div>
+
+            <div id="resize-settings" class="hidden space-y-6">
+                <div class="glass-panel p-8 rounded-3xl">
+                    <label class="block text-sm font-semibold mb-6 text-white/80">2. Atur Dimensi (px)</label>
+                    
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-xs font-bold text-white/50 mb-2 uppercase">Lebar (Width)</label>
+                            <input type="number" id="resize-width" placeholder="1080" class="w-full p-3 bg-white/5 border border-white/10 rounded-xl focus:border-sky-500 outline-none transition text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-white/50 mb-2 uppercase">Tinggi (Height)</label>
+                            <input type="number" id="resize-height" placeholder="1080" class="w-full p-3 bg-white/5 border border-white/10 rounded-xl focus:border-sky-500 outline-none transition text-white">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 p-4 bg-sky-500/10 rounded-2xl border border-sky-500/20">
+                        <input type="checkbox" id="resize-aspect" checked class="w-5 h-5 rounded border-sky-400 text-sky-500 cursor-pointer">
+                        <label for="resize-aspect" class="text-sm font-medium text-white/70 cursor-pointer select-none">
+                            Pertahankan Proporsi Foto (Agar tidak gepeng)
+                        </label>
+                    </div>
+                </div>
+
+                <button id="resize-processBtn" class="w-full py-4 bg-sky-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-sky-900/50 hover:bg-sky-700 transition transform active:scale-[0.98] uppercase tracking-wide">
+                    Generate
+                </button>
+            </div>
+
+            <div id="resize-result" class="hidden text-center">
+                <h2 class="text-xl font-bold mb-6 text-white">Hasil Pratinjau</h2>
+                <div class="inline-block p-3 bg-black/30 rounded-2xl shadow-xl mb-6 border border-white/10">
+                    <canvas id="resize-canvas" class="max-w-full h-auto rounded-lg shadow-inner"></canvas>
+                </div>
+                <br>
+                <button id="resize-downloadBtn" class="px-10 py-4 bg-emerald-500 text-white font-bold rounded-2xl hover:bg-emerald-600 shadow-lg shadow-emerald-900/50 transition inline-flex items-center gap-2">
+                    UNDUH GAMBAR
+                </button>
+            </div>
+        </div>
+
+        <!-- CROP TAB -->
+        <div id="content-crop" class="tab-content w-full max-w-2xl space-y-6">
+            <div class="glass-panel p-6 rounded-2xl text-center">
+                <label class="block text-sm font-semibold mb-4 text-left text-white/80">1. Unggah Gambar</label>
+                <input type="file" id="crop-fileInput" accept="image/*" class="block w-full text-sm text-white/50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-400 hover:file:bg-blue-500/30 cursor-pointer" />
+            </div>
+
+            <div id="crop-settings" class="hidden space-y-6">
+                <div class="glass-panel p-6 rounded-2xl">
+                    <label class="block text-sm font-semibold mb-4 text-white/80">2. Tentukan Arah Potongan</label>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <button onclick="cropSetDir('horizontal')" id="btn-horizontal" class="glass-btn flex flex-col items-center justify-center p-4 rounded-xl">
+                            <span class="font-bold text-white">Horizontal</span>
+                            <span class="text-xs text-white/50">(Bagi Kolom)</span>
+                        </button>
+                        <button onclick="cropSetDir('vertical')" id="btn-vertical" class="glass-btn flex flex-col items-center justify-center p-4 rounded-xl">
+                            <span class="font-bold text-white">Vertikal</span>
+                            <span class="text-xs text-white/50">(Bagi Baris)</span>
+                        </button>
+                        <button onclick="cropSetDir('both')" id="btn-both" class="glass-btn flex flex-col items-center justify-center p-4 rounded-xl border-blue-500 bg-blue-500/20">
+                            <span class="font-bold text-blue-400">Keduanya</span>
+                            <span class="text-xs text-blue-400/70">(Grid)</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-bold text-white/50 mb-1 uppercase">Jumlah Kolom</label>
+                            <input type="number" id="crop-cols" value="1" min="1" class="w-full p-3 bg-white/5 border border-white/10 rounded-lg focus:border-blue-500 outline-none transition text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-white/50 mb-1 uppercase">Jumlah Baris</label>
+                            <input type="number" id="crop-rows" value="1" min="1" class="w-full p-3 bg-white/5 border border-white/10 rounded-lg focus:border-blue-500 outline-none transition text-white">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-white/50 mb-1 uppercase">Format Output</label>
+                        <select id="crop-format" class="w-full p-3 bg-white/5 border border-white/10 rounded-lg focus:border-blue-500 outline-none transition text-white">
+                            <option value="webp" class="text-black">WebP</option>
+                            <option value="png" class="text-black">PNG</option>
+                            <option value="jpeg" class="text-black">JPEG</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl text-center">
+                    <label class="block text-sm font-semibold mb-4 text-left text-white/80">3. Pratinjau Garis Potong</label>
+                    <div class="relative inline-block border-2 border-white/20 rounded-lg overflow-hidden bg-black/30">
+                        <div class="relative">
+                            <img id="crop-preview-img" class="max-w-full h-auto block" style="max-height: 400px;" src="" alt="">
+                            <div id="crop-grid-overlay"></div>
+                        </div>
+                    </div>
+                    <div id="crop-infoBox" class="mt-4 p-4 bg-blue-500/10 text-blue-300 rounded-lg text-sm font-medium"></div>
+                </div>
+
+                <button onclick="cropGenerate()" id="crop-generate-btn" class="w-full py-4 bg-blue-600 text-white font-bold text-lg rounded-xl shadow-lg shadow-blue-900/50 hover:bg-blue-700 transition transform active:scale-95 uppercase tracking-wider">
+                    Potong Gambar Sekarang
+                </button>
+            </div>
+
+            <div id="crop-loading" class="hidden text-center py-8">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+                <p class="text-white/70 mt-4 font-medium">Memproses gambar...</p>
+                <p id="crop-loading-progress" class="text-white/50 text-sm mt-1">0 / 0</p>
+            </div>
+
+            <div id="crop-result" class="hidden space-y-8">
+                <div>
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-white">Hasil Potongan</h2>
+                        <button id="crop-downloadAllBtn" class="px-6 py-2 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 shadow-lg">
+                            UNDUH SEMUA (.ZIP)
+                        </button>
+                    </div>
+                    <div id="crop-results" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                            JSON Result
+                        </h3>
+                        <button onclick="copyJSON()" class="text-xs bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition font-bold tracking-widest uppercase text-white/80">
+                            <span id="copyText">Salin JSON</span>
+                        </button>
+                    </div>
+                    <pre id="jsonOutput" class="text-[11px] md:text-[12px] leading-relaxed overflow-auto max-h-[400px] bg-black/50 p-4 rounded-xl font-mono text-blue-300"></pre>
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center py-8 text-white/30 text-sm">
+            <p class="font-medium">Image Tools • Made with ✦</p>
+        </footer>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let fishes = [];
+        let splashes = [];
+        let stars = [];
+        let animTime = 0;
+
+        const colorStops = [
+            { t: 0, skyTop: [2,1,17], skyBot: [32,18,77], wave1: [20,20,50], wave2: [10,10,40], wave3: [0,0,30] },
+            { t: 4, skyTop: [2,1,17], skyBot: [32,18,77], wave1: [20,20,50], wave2: [10,10,40], wave3: [0,0,30] },
+            { t: 5.5, skyTop: [32,18,77], skyBot: [255,81,47], wave1: [91,18,72], wave2: [42,8,69], wave3: [25,5,40] },
+            { t: 7, skyTop: [255,123,0], skyBot: [255,195,113], wave1: [0,120,180], wave2: [0,80,140], wave3: [0,40,90] },
+            { t: 10, skyTop: [86,204,242], skyBot: [47,128,237], wave1: [0,168,255], wave2: [0,130,220], wave3: [0,90,180] },
+            { t: 15, skyTop: [86,204,242], skyBot: [100,160,250], wave1: [0,168,255], wave2: [0,130,220], wave3: [0,90,180] },
+            { t: 17.5, skyTop: [255,81,47], skyBot: [221,36,118], wave1: [144,28,86], wave2: [91,18,72], wave3: [42,8,69] },
+            { t: 19, skyTop: [32,18,77], skyBot: [2,1,17], wave1: [42,8,69], wave2: [25,5,40], wave3: [10,2,20] },
+            { t: 24, skyTop: [2,1,17], skyBot: [32,18,77], wave1: [20,20,50], wave2: [10,10,40], wave3: [0,0,30] }
+        ];
+
+        function getColor(prop, timeOfDay) {
+            let start = colorStops[0], end = colorStops[colorStops.length-1];
+            for(let i=0; i<colorStops.length-1; i++) {
+                if(timeOfDay >= colorStops[i].t && timeOfDay <= colorStops[i+1].t) {
+                    start = colorStops[i]; end = colorStops[i+1]; break;
+                }
+            }
+            let fraction = (end.t === start.t) ? 0 : (timeOfDay - start.t) / (end.t - start.t);
+            let r = Math.round(start[prop][0] + (end[prop][0] - start[prop][0]) * fraction);
+            let g = Math.round(start[prop][1] + (end[prop][1] - start[prop][1]) * fraction);
+            let b = Math.round(start[prop][2] + (end[prop][2] - start[prop][2]) * fraction);
+            return `rgb(${r},${g},${b})`;
+        }
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            stars = [];
+            for(let i=0; i<150; i++) {
+                stars.push({ x: Math.random() * width, y: Math.random() * (height * 0.7), size: Math.random() * 1.5, blinkSpeed: Math.random() * 0.02 + 0.005, alpha: Math.random() });
+            }
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Splash {
+            constructor(x, y) { this.x = x; this.y = y; this.particles = [];
+                for (let i = 0; i < 6; i++) { this.particles.push({ vx: (Math.random() - 0.5) * 5, vy: -(Math.random() * 3 + 2), life: 1, size: Math.random() * 3 + 1 }); }
+            }
+            update() { this.particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life -= 0.03; }); this.particles = this.particles.filter(p => p.life > 0); }
+            draw() { ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; this.particles.forEach(p => { ctx.beginPath(); ctx.arc(this.x + p.x, this.y + p.y, p.size, 0, Math.PI * 2); ctx.fill(); }); }
+        }
+
+        class JumpingFish {
+            constructor() { this.x = Math.random() * width; this.waterLevel = height * 0.7; this.y = this.waterLevel + 50; this.vx = (Math.random() - 0.5) * 6; this.vy = -(10 + Math.random() * 5); this.gravity = 0.4; this.angle = 0; this.size = 0.6 + Math.random() * 0.4; this.hasSplashed = false; }
+            update() { this.x += this.vx; this.y += this.vy; this.vy += this.gravity; this.angle = Math.atan2(this.vy, this.vx); if (this.y >= this.waterLevel && this.vy > 0 && !this.hasSplashed) { splashes.push(new Splash(this.x, this.waterLevel)); this.hasSplashed = true; } }
+            draw() { ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle); ctx.scale(this.size, this.size); ctx.fillStyle = '#0a0a0a'; ctx.beginPath(); ctx.ellipse(0, 0, 15, 6, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(-24, -8); ctx.lineTo(-24, 8); ctx.fill(); ctx.beginPath(); ctx.moveTo(-4, -5); ctx.lineTo(0, -12); ctx.lineTo(4, -5); ctx.fill(); ctx.beginPath(); ctx.moveTo(-4, 5); ctx.lineTo(0, 10); ctx.lineTo(4, 5); ctx.fill(); ctx.restore(); }
+        }
+
+        function drawWave(yOffset, amplitude, frequency, speed, color) {
+            ctx.beginPath(); ctx.moveTo(0, height); ctx.lineTo(0, yOffset + Math.sin(animTime * speed) * amplitude);
+            for (let x = 0; x <= width + 40; x += 20) ctx.lineTo(x, yOffset + Math.sin(x * frequency + animTime * speed) * amplitude);
+            ctx.lineTo(width + 40, height); ctx.lineTo(0, height); ctx.fillStyle = color; ctx.fill();
+        }
+
+        function drawBackgroundAndCelestialBodies(timeOfDay) {
+            let bgGrad = ctx.createLinearGradient(0, 0, 0, height * 0.7);
+            bgGrad.addColorStop(0, getColor('skyTop', timeOfDay)); bgGrad.addColorStop(1, getColor('skyBot', timeOfDay));
+            ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, width, height);
+
+            let starOpacity = 0;
+            if (timeOfDay < 6) starOpacity = 1 - (timeOfDay / 6);
+            if (timeOfDay > 18) starOpacity = (timeOfDay - 18) / 6;
+            if (starOpacity > 0) { stars.forEach(s => { s.alpha += s.blinkSpeed; if(s.alpha > 1 || s.alpha < 0) s.blinkSpeed *= -1; ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(s.alpha) * starOpacity})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2); ctx.fill(); }); }
+
+            let cx = width / 2;
+            let sunY = height * 0.8 - Math.sin((timeOfDay - 6) / 12 * Math.PI) * (height * 0.65);
+            if (timeOfDay >= 5 && timeOfDay <= 19) { ctx.beginPath(); ctx.arc(cx, sunY, 60, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255, 230, 100, 1)'; ctx.shadowBlur = 50; ctx.shadowColor = 'rgba(255, 200, 0, 0.8)'; ctx.fill(); ctx.shadowBlur = 0; }
+
+            let moonTime = (timeOfDay + 12) % 24;
+            let moonY = height * 0.8 - Math.sin((moonTime - 6) / 12 * Math.PI) * (height * 0.65);
+            if (timeOfDay < 7 || timeOfDay > 17) { ctx.beginPath(); ctx.arc(cx, moonY, 40, 0, Math.PI * 2); ctx.fillStyle = '#f0f0f0'; ctx.shadowBlur = 30; ctx.shadowColor = 'rgba(255, 255, 255, 0.5)'; ctx.fill(); ctx.shadowBlur = 0; }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            const now = new Date();
+            const currentTime = now.getHours() + (now.getMinutes() / 60) + (now.getSeconds() / 3600);
+            drawBackgroundAndCelestialBodies(currentTime);
+            if (Math.random() < 0.015 && fishes.length < 8) fishes.push(new JumpingFish());
+            splashes.forEach(s => { s.update(); s.draw(); }); splashes = splashes.filter(s => s.particles.length > 0);
+            drawWave(height * 0.68, 15, 0.003, 1.5, getColor('wave1', currentTime));
+            fishes.forEach(f => { f.update(); f.draw(); }); fishes = fishes.filter(f => f.y < height + 100);
+            drawWave(height * 0.72, 25, 0.002, 2.0, getColor('wave2', currentTime));
+            drawWave(height * 0.78, 35, 0.0015, 2.5, getColor('wave3', currentTime));
+            animTime += 0.02; requestAnimationFrame(animate);
+        }
+        animate();
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active', 'bg-white/10', 'text-white/80'); b.classList.add('bg-white/10', 'text-white/80'); });
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            const btn = document.getElementById(`tab-${tab}`);
+            btn.classList.add('active');
+            btn.classList.remove('bg-white/10', 'text-white/80');
+            document.getElementById(`content-${tab}`).classList.add('active');
+            
+            if(tab === 'resize') {
+                document.getElementById('pageTitle').textContent = 'Resizer Gambar';
+                document.getElementById('pageDesc').textContent = 'Ubah ukuran gambar dengan presisi.';
+            } else {
+                document.getElementById('pageTitle').textContent = 'Crop Gambar';
+                document.getElementById('pageDesc').textContent = 'Potong gambar menjadi beberapa bagian.';
+            }
+        }
+
+        // RESIZE FUNCTIONS
+        let resizeImg = new Image();
+
+        document.getElementById('resize-fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                resizeImg.onload = function() {
+                    document.getElementById('resize-width').value = resizeImg.width;
+                    document.getElementById('resize-height').value = resizeImg.height;
+                    document.getElementById('resize-settings').classList.remove('hidden');
+                    document.getElementById('resize-result').classList.add('hidden');
+                };
+                resizeImg.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('resize-width').addEventListener('input', function() {
+            if (document.getElementById('resize-aspect').checked && resizeImg.src) {
+                const ratio = resizeImg.height / resizeImg.width;
+                document.getElementById('resize-height').value = Math.round(this.value * ratio);
+            }
+        });
+
+        document.getElementById('resize-height').addEventListener('input', function() {
+            if (document.getElementById('resize-aspect').checked && resizeImg.src) {
+                const ratio = resizeImg.width / resizeImg.height;
+                document.getElementById('resize-width').value = Math.round(this.value * ratio);
+            }
+        });
+
+        document.getElementById('resize-processBtn').addEventListener('click', function() {
+            const targetW = parseInt(document.getElementById('resize-width').value) || resizeImg.width;
+            const targetH = parseInt(document.getElementById('resize-height').value) || resizeImg.height;
+            
+            const canvas = document.getElementById('resize-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = targetW;
+            canvas.height = targetH;
+            ctx.clearRect(0, 0, targetW, targetH);
+
+            if (document.getElementById('resize-aspect').checked) {
+                const imgRatio = resizeImg.width / resizeImg.height;
+                const targetRatio = targetW / targetH;
+                
+                let drawW, drawH, x, y;
+
+                if (imgRatio > targetRatio) {
+                    drawW = targetW;
+                    drawH = targetW / imgRatio;
+                    x = 0;
+                    y = (targetH - drawH) / 2;
+                } else {
+                    drawW = targetH * imgRatio;
+                    drawH = targetH;
+                    x = (targetW - drawW) / 2;
+                    y = 0;
+                }
+                
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, targetW, targetH);
+                ctx.drawImage(resizeImg, x, y, drawW, drawH);
+            } else {
+                ctx.drawImage(resizeImg, 0, 0, targetW, targetH);
+            }
+
+            document.getElementById('resize-result').classList.remove('hidden');
+            document.getElementById('resize-result').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        document.getElementById('resize-downloadBtn').addEventListener('click', function() {
+            const canvas = document.getElementById('resize-canvas');
+            const link = document.createElement('a');
+            link.download = `resized_${canvas.width}x${canvas.height}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+
+        // CROP FUNCTIONS
+        let cropImg = null;
+        let cropFileName = '';
+        let cropFileSize = 0;
+        let cropDir = 'both';
+
+        document.getElementById('crop-fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            cropFileName = file.name;
+            cropFileSize = file.size;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                cropImg = new Image();
+                cropImg.onload = function() {
+                    document.getElementById('crop-settings').classList.remove('hidden');
+                    document.getElementById('crop-result').classList.add('hidden');
+                    document.getElementById('crop-preview-img').src = event.target.result;
+                    cropUpdateGrid();
+                };
+                cropImg.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function cropSetDir(dir) {
+            cropDir = dir;
+            document.querySelectorAll('.glass-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'bg-blue-500/20');
+                btn.classList.add('border-white/10');
+            });
+            document.getElementById(`btn-${dir}`).classList.add('border-blue-500', 'bg-blue-500/20');
+            document.getElementById(`btn-${dir}`).classList.remove('border-white/10');
+
+            if(dir === 'horizontal') {
+                document.getElementById('crop-rows').value = 1;
+                document.getElementById('crop-rows').disabled = true;
+                document.getElementById('crop-cols').disabled = false;
+            } else if(dir === 'vertical') {
+                document.getElementById('crop-cols').value = 1;
+                document.getElementById('crop-cols').disabled = true;
+                document.getElementById('crop-rows').disabled = false;
+            } else {
+                document.getElementById('crop-rows').disabled = false;
+                document.getElementById('crop-cols').disabled = false;
+            }
+            cropUpdateGrid();
+        }
+
+        function cropUpdateGrid() {
+            if (!cropImg) return;
+            const c = parseInt(document.getElementById('crop-cols').value) || 1;
+            const r = parseInt(document.getElementById('crop-rows').value) || 1;
+            const overlay = document.getElementById('crop-grid-overlay');
+            overlay.innerHTML = '';
+            overlay.style.position = 'absolute';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            
+            for (let i = 1; i < c; i++) {
+                const l = document.createElement('div');
+                l.className = 'grid-line';
+                l.style.left = `${(i/c)*100}%`;
+                l.style.width = '2px';
+                l.style.height = '100%';
+                overlay.appendChild(l);
+            }
+            for (let i = 1; i < r; i++) {
+                const l = document.createElement('div');
+                l.className = 'grid-line';
+                l.style.top = `${(i/r)*100}%`;
+                l.style.height = '2px';
+                l.style.width = '100%';
+                overlay.appendChild(l);
+            }
+            
+            document.getElementById('crop-infoBox').innerHTML = `Ukuran Akhir: <b>${c * 1080} x ${r * 1080} px</b>. Terbagi menjadi <b>${c * r} bagian</b> 1080x1080 px.`;
+        }
+
+        document.getElementById('crop-cols').addEventListener('input', cropUpdateGrid);
+        document.getElementById('crop-rows').addEventListener('input', cropUpdateGrid);
+
+        function getShortUUID() {
+            const length = Math.floor(Math.random() * 4) + 5;
+            return Math.random().toString(36).substring(2, 2 + length);
+        }
+
+        function cropGenerate() {
+            const cols = parseInt(document.getElementById('crop-cols').value) || 1;
+            const rows = parseInt(document.getElementById('crop-rows').value) || 1;
+            const outputFormat = document.getElementById('crop-format').value;
+            const resultsGrid = document.getElementById('crop-results');
+            const resultArea = document.getElementById('crop-result');
+            const jsonOutput = document.getElementById('jsonOutput');
+            
+            document.getElementById('crop-settings').classList.add('hidden');
+            document.getElementById('crop-loading').classList.remove('hidden');
+            document.getElementById('crop-result').classList.add('hidden');
+            document.getElementById('crop-loading').scrollIntoView({ behavior: 'smooth' });
+            
+            resultsGrid.innerHTML = '';
+
+            setTimeout(() => {
+                const zip = new JSZip();
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 1080;
+                canvas.height = 1080;
+
+                const finalData = {
+                    metadata: {
+                        uploaded_filename: cropFileName,
+                        original_file_size: cropFileSize,
+                        dimensions: {
+                            width: cropImg.width,
+                            height: cropImg.height
+                        },
+                        timestamp: new Date().toISOString()
+                    },
+                    config: {
+                        mode: cropDir,
+                        output_format: outputFormat,
+                        division: {
+                            vertical: rows,
+                            horizontal: cols
+                        },
+                        total_pieces: rows * cols
+                    },
+                    pieces: []
+                };
+
+                const mimeType = outputFormat === 'jpeg' ? 'image/jpeg' : outputFormat === 'png' ? 'image/png' : 'image/webp';
+                const ext = outputFormat === 'jpeg' ? 'jpg' : outputFormat;
+
+                const totalPieces = rows * cols;
+                let counter = 1;
+                let processed = 0;
+
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const sX = (c / cols) * cropImg.width;
+                        const sY = (r / rows) * cropImg.height;
+                        const sW = cropImg.width / cols;
+                        const sH = cropImg.height / rows;
+
+                        ctx.clearRect(0, 0, 1080, 1080);
+                        ctx.drawImage(cropImg, sX, sY, sW, sH, 0, 0, 1080, 1080);
+                        
+                        const imgData = canvas.toDataURL(mimeType, 0.9);
+                        const fileName = `crop_${cropDir}_row${r + 1}_col${c + 1}_${getShortUUID()}.${ext}`;
+
+                        const now = new Date();
+                        const timestamp = now.toISOString();
+
+                        const b64 = imgData.split(',')[1];
+                        const checksum = b64.substring(0, 50);
+
+                        finalData.pieces.push({
+                            id: counter++,
+                            filename: fileName,
+                            datetime: timestamp,
+                            checksum: checksum
+                        });
+
+                        const card = document.createElement('div');
+                        card.className = 'crop-card p-2';
+                        card.innerHTML = `
+                            <img src="${imgData}" class="w-full rounded-lg mb-2">
+                            <div class="text-[9px] font-mono text-white/50 truncate mb-2 px-1">${fileName}</div>
+                            <a href="${imgData}" download="${fileName}" class="text-[10px] bg-blue-500/20 text-blue-300 px-3 py-1.5 rounded font-bold hover:bg-blue-500/40 transition block text-center">Unduh</a>
+                        `;
+                        resultsGrid.appendChild(card);
+
+                        zip.file(fileName, b64, {base64: true});
+                        
+                        processed++;
+                        document.getElementById('crop-loading-progress').textContent = `${processed} / ${totalPieces}`;
+                    }
+                }
+
+                document.getElementById('crop-loading').classList.add('hidden');
+                document.getElementById('crop-result').classList.remove('hidden');
+                document.getElementById('crop-settings').classList.remove('hidden');
+                
+                jsonOutput.textContent = JSON.stringify(finalData, null, 2);
+
+                document.getElementById('crop-downloadAllBtn').onclick = function() {
+                    zip.generateAsync({type:"blob"}).then(blob => {
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = `result_${cropFileName.split('.')[0]}.zip`;
+                        link.click();
+                    });
+                };
+            }, 100);
+        }
+
+        function copyJSON() {
+            const text = document.getElementById('jsonOutput').textContent;
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            const btn = document.getElementById('copyText');
+            btn.innerText = "BERHASIL DISALIN!";
+            setTimeout(() => btn.innerText = "Salin JSON", 2000);
+        }
+    </script>
+</body>
+</html>

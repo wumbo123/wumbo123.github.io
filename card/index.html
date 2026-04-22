@@ -3,156 +3,750 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Files</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Fantasy Card Builder - Ultra HD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Quicksand:wght@300;500;700&display=swap');
+        
+        * { box-sizing: border-box; }
+        
         body {
-            font-family: 'Poppins', sans-serif;
-            background: #0d1117;
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #0a0a12 0%, #12121f 50%, #0a0a12 100%);
+            color: #e0e0e0;
             min-height: 100vh;
-            color: #c9d1d9;
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 20px;
+        .font-fantasy { font-family: 'Cinzel', serif; }
+
+        /* Back to Root Button */
+        .back-to-root {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+            border: 1px solid #3d3d5c;
+            color: #a0a0b0;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            z-index: 50;
         }
 
-        header {
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #30363d;
+        .back-to-root:hover {
+            border-color: #ffd700;
+            color: #ffd700;
+            transform: translateX(-5px);
         }
 
-        header h1 {
-            font-size: 1.8rem;
-            color: #58a6ff;
-            margin-bottom: 8px;
+        /* Card Container - TEBAL & ELEGAN */
+        #final-card {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16162a 50%, #121225 100%);
+            border: 2px solid #3d3d5c;
+            border-radius: 24px;
+            width: 380px;
+            overflow: hidden;
+            box-shadow: 
+                0 0 60px rgba(0,0,0,0.8),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+            position: relative;
         }
 
-        header p {
-            color: #8b949e;
-            font-size: 0.9rem;
-        }
-
-        .path {
-            font-family: 'JetBrains Mono', monospace;
-            color: #7ee787;
-            font-size: 0.85rem;
-            background: #161b22;
-            padding: 8px 12px;
-            border-radius: 6px;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-
-        .file-list {
-            background: #161b22;
-            border-radius: 8px;
-            border: 1px solid #30363d;
+        /* Top Section - Gambar & Overlay */
+        .card-header {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            border-radius: 22px 22px 0 0;
             overflow: hidden;
         }
 
-        .file-header {
-            display: grid;
-            grid-template-columns: 1fr 100px 120px;
-            padding: 12px 20px;
-            background: #21262d;
-            font-size: 0.75rem;
-            color: #8b949e;
+        .card-header img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+            transition: object-position 0.2s ease;
+        }
+
+        .card-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(to top, #16162a 0%, transparent 100%);
+        }
+
+        /* Inline Price */
+        .price-inline {
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+        }
+
+        /* Rarity Badge - Top Right */
+        .rarity-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 2px;
+            z-index: 20;
         }
 
-        .file-item {
-            display: grid;
-            grid-template-columns: 1fr 100px 120px;
-            padding: 14px 20px;
-            border-bottom: 1px solid #30363d;
-            transition: background 0.2s;
-            text-decoration: none;
-            color: inherit;
+        /* Card Body */
+        .card-body {
+            padding: 24px 24px 20px;
         }
 
-        .file-item:last-child {
-            border-bottom: none;
+        /* Title */
+        .card-title {
+            font-family: 'Cinzel', serif;
+            font-size: 28px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            line-height: 1.2;
         }
 
-        .file-item:hover {
-            background: #1f2428;
+        /* Divider */
+        .card-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, #3d3d5c 50%, transparent 100%);
+            margin: 16px 0;
         }
 
-        .file-name {
-            display: flex;
+        /* Description */
+        .card-description {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #a0a0b0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Glow Effects */
+        .glow-gold { text-shadow: 0 0 20px rgba(255,215,0,0.5); }
+
+        /* Rarity Colors */
+        .rarity-common { background: linear-gradient(135deg, #4a4a5a 0%, #3a3a4a 100%); color: #9ca3af; border: 1px solid #6b7280; }
+        .rarity-uncommon { background: linear-gradient(135deg, #166534 0%, #14532d 100%); color: #4ade80; border: 1px solid #22c55e; }
+        .rarity-rare { background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%); color: #60a5fa; border: 1px solid #3b82f6; }
+        .rarity-epic { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); color: #c084fc; border: 1px solid #a855f7; }
+        .rarity-legendary { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: #fbbf24; border: 1px solid #f59e0b; box-shadow: 0 0 20px rgba(245,158,11,0.3); }
+        .rarity-mythic { background: linear-gradient(135deg, #db2777 0%, #9d174d 100%); color: #f472b6; border: 1px solid #ec4899; box-shadow: 0 0 25px rgba(236,72,153,0.4); }
+        .rarity-exotic { background: linear-gradient(135deg, #0891b2 0%, #164e63 100%); color: #22d3ee; border: 1px solid #06b6d4; box-shadow: 0 0 20px rgba(6,182,212,0.3); }
+        .rarity-transcendent { background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%); color: #c4b5fd; border: 1px solid #8b5cf6; box-shadow: 0 0 30px rgba(139,92,246,0.4); }
+        .rarity-forbidden { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 25px rgba(239,68,68,0.4); }
+        .rarity-celestial { background: linear-gradient(135deg, #eab308 0%, #a16207 100%); color: #fef08a; border: 1px solid #fbbf24; box-shadow: 0 0 30px rgba(251,191,36,0.5); }
+        .rarity-divine { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: #fdba74; border: 1px solid #fb923c; box-shadow: 0 0 25px rgba(251,146,60,0.4); }
+        .rarity-omniversal { background: linear-gradient(135deg, #c026d3 0%, #9d174d 100%); color: #f0abfc; border: 1px solid #e879f9; box-shadow: 0 0 35px rgba(232,121,249,0.5); }
+        .rarity-primordial { background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: #5eead4; border: 1px solid #14b8a6; box-shadow: 0 0 30px rgba(20,184,166,0.4); }
+        .rarity-cosmic { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #a5b4fc; border: 1px solid #6366f1; box-shadow: 0 0 30px rgba(99,102,241,0.4); }
+        .rarity-quantum { background: linear-gradient(135deg, #14b8a6 0%, #0f766e 100%); color: #5eead4; border: 1px solid #2dd4bf; box-shadow: 0 0 30px rgba(45,212,191,0.4); }
+        .rarity-eternal { background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); color: #f9a8d4; border: 1px solid #f472b6; box-shadow: 0 0 30px rgba(244,114,182,0.4); }
+        .rarity-infinite { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: #c4b5fd; border: 1px solid #a78bfa; box-shadow: 0 0 35px rgba(139,92,246,0.5); }
+        .rarity-absolute { background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%); color: #1e293b; border: 1px solid #e2e8f0; box-shadow: 0 0 30px rgba(255,255,255,0.3); }
+        .rarity-artifact { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: #fed7aa; border: 1px solid #f97316; box-shadow: 0 0 25px rgba(249,115,22,0.4); }
+        .rarity-special { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 50%, #155e75 100%); color: #67e8f9; border: 1px solid #22d3ee; box-shadow: 0 0 35px rgba(34,211,238,0.5), 0 0 60px rgba(6,182,212,0.3); }
+
+        /* Input Styles */
+        .input-field {
+            background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%);
+            border: 1px solid #2d2d45;
+            color: #e0e0e0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.2);
+            outline: none;
+        }
+
+        .input-field::placeholder { color: #555; }
+
+        /* Checkbox Styles */
+        .custom-checkbox {
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border: 2px solid #3d3d5c;
+            border-radius: 6px;
+            background: #1a1a2e;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .custom-checkbox:checked {
+            background: linear-gradient(135deg, #ffd700 0%, #ff9500 100%);
+            border-color: #ffd700;
+        }
+
+        .custom-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #1a1a2e;
+            font-weight: 900;
+            font-size: 14px;
+        }
+
+        /* Select */
+        .custom-select {
+            background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%);
+            border: 1px solid #2d2d45;
+            color: #e0e0e0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .custom-select:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.2);
+            outline: none;
+        }
+
+        /* Range Slider */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, #1a1a2e 0%, #2d2d45 100%);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #ffd700 0%, #ff9500 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(255,215,0,0.4);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #ffd700 0%, #ff9500 100%);
+            color: #1a1a2e;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 16px 32px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(255,215,0,0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255,215,0,0.5);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #2a2a4a 0%, #1a1a35 100%);
+            color: #a0a0b0;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: 1px solid #3d3d5c;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: #ffd700;
+            color: #ffd700;
+        }
+
+        /* Overlay */
+        #image-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 100;
+            justify-content: center;
             align-items: center;
-            gap: 10px;
+            cursor: zoom-out;
         }
 
-        .file-icon {
-            font-size: 1.2rem;
+        #image-overlay img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 12px;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8);
         }
 
-        .file-icon.html { color: #e34c26; }
-        .file-icon.js { color: #f7df1e; }
-        .file-icon.txt { color: #8b949e; }
-
-        .file-size, .file-date {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: #8b949e;
-        }
-
-        footer {
-            margin-top: 40px;
+        /* Footer Link */
+        .footer-link {
             text-align: center;
-            color: #484f58;
-            font-size: 0.8rem;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #2d2d45;
+        }
+
+        .footer-link a {
+            color: #ffd700;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+            border: 1px solid #ffd700;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .footer-link a:hover {
+            background: linear-gradient(135deg, #ffd700 0%, #ff9500 100%);
+            color: #1a1a2e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(255,215,0,0.4);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-up {
+            animation: slideUp 0.4s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(100%); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Index of /</h1>
-            <p>Server File Listing</p>
-        </header>
+<body class="min-h-screen p-4 sm:p-8">
 
-        <div class="path" id="currentPath">/root/card</div>
+    <!-- Back to Root Button -->
+    <a href="/" class="back-to-root">
+        <span>←</span>
+        <span>Kembali ke Root</span>
+    </a>
 
-        <div class="file-list">
-            <div class="file-header">
-                <span>Name</span>
-                <span>Size</span>
-                <span>Modified</span>
+    <div id="app" class="w-full max-w-lg mx-auto my-8">
+        <!-- FORM INPUT -->
+        <div id="input-section" class="bg-[#12121f] border border-[#2d2d45] rounded-3xl p-6 sm:p-8 shadow-2xl">
+            <h1 class="text-2xl font-fantasy text-center text-yellow-500 mb-6 tracking-widest uppercase border-b border-[#2d2d45] pb-4">Fantasy Card Builder</h1>
+            
+            <div class="space-y-5">
+                <!-- Price Section -->
+                <div class="bg-[#0f0f1a] rounded-xl p-5 border border-[#2d2d45]">
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                            <input type="checkbox" id="enable-price" class="custom-checkbox" onchange="togglePriceInput()">
+                            <span>Tampilkan Harga Kartu</span>
+                        </label>
+                    </div>
+                    <div id="price-input-container" class="hidden">
+                        <input type="number" id="input-price" placeholder="Contoh: 40111" class="input-field w-full" oninput="updateCardPrice()">
+                        <p class="text-[10px] text-gray-500 mt-2">Masukkan angka harga kartu (5 digit)</p>
+                    </div>
+                </div>
+
+                <!-- Image Upload -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Unggah Cover Gambar</label>
+                    <input type="file" id="input-image" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:bg-yellow-600 file:text-white file:font-semibold cursor-pointer">
+                </div>
+
+                <!-- Title -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Nama Kartu</label>
+                    <input type="text" id="input-title" placeholder="Contoh: Thunder Strike" class="input-field w-full">
+                </div>
+
+                <!-- Type & Rarity -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Tipe Skill</label>
+                        <input type="text" id="input-skill-type" placeholder="Aktif / Pasif" class="input-field w-full">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Rarity</label>
+                        <select id="input-rarity" class="custom-select w-full">
+                            <option value="Common">Common</option>
+                            <option value="Uncommon">Uncommon</option>
+                            <option value="Rare">Rare</option>
+                            <option value="Epic">Epic</option>
+                            <option value="Legendary">Legendary</option>
+                            <option value="Mythic">Mythic</option>
+                            <option value="Exotic">Exotic</option>
+                            <option value="Transcendent">Transcendent</option>
+                            <option value="Forbidden">Forbidden</option>
+                            <option value="Celestial">Celestial</option>
+                            <option value="Divine">Divine</option>
+                            <option value="Omniversal">Omniversal</option>
+                            <option value="Primordial">Primordial</option>
+                            <option value="Cosmic">Cosmic</option>
+                            <option value="Quantum">Quantum</option>
+                            <option value="Eternal">Eternal</option>
+                            <option value="Infinite">Infinite</option>
+                            <option value="Absolute">Absolute</option>
+                            <option value="Artifact">Artifact</option>
+                            <option value="Special">Special</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Sliders -->
+                <div class="space-y-4 bg-[#0a0a14] p-5 rounded-xl border border-[#2d2d45]">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-2 flex justify-between">
+                            Tinggi Cover <span><span id="val-cover">280</span>px</span>
+                        </label>
+                        <input type="range" id="size-cover" min="150" max="500" value="280" class="w-full">
+                    </div>
+                    
+                    <!-- Posisi Gambar -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-2 flex justify-between">
+                            Posisi Gambar <span><span id="val-offset">50</span>%</span>
+                        </label>
+                        <input type="range" id="img-offset" min="0" max="100" value="50" class="w-full">
+                        <p class="text-[9px] text-gray-600 mt-1">Geser untuk mengatur posisi vertikal gambar</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-2 flex justify-between">
+                                Ukuran Judul <span><span id="val-title">28</span>px</span>
+                            </label>
+                            <input type="range" id="size-title" min="16" max="40" value="28" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-2 flex justify-between">
+                                Ukuran Deskripsi <span><span id="val-desc">14</span>px</span>
+                            </label>
+                            <input type="range" id="size-desc" min="10" max="20" value="14" class="w-full">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Text Align -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Perataan Teks</label>
+                    <div class="flex gap-2">
+                        <button onclick="setAlign('left')" class="flex-1 py-3 bg-[#1a1a2e] rounded-xl text-xs font-bold hover:bg-yellow-700 transition uppercase">Kiri</button>
+                        <button onclick="setAlign('center')" class="flex-1 py-3 bg-yellow-600 rounded-xl text-xs font-bold transition uppercase">Tengah</button>
+                        <button onclick="setAlign('right')" class="flex-1 py-3 bg-[#1a1a2e] rounded-xl text-xs font-bold hover:bg-yellow-700 transition uppercase">Kanan</button>
+                    </div>
+                    <input type="hidden" id="input-align" value="center">
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Deskripsi</label>
+                    <textarea id="input-description" rows="4" placeholder="Tulis deskripsi skill di sini..." class="input-field w-full resize-none"></textarea>
+                </div>
+
+                <!-- Generate Button -->
+                <button onclick="generateCard()" class="btn-primary w-full">
+                    Buat Kartu
+                </button>
             </div>
-            <a href="card.html" class="file-item">
-                <div class="file-name">
-                    <span class="file-icon html">📄</span>
-                    <span>card.html</span>
-                </div>
-            </a>
-            <a href="hd.html" class="file-item">
-                <div class="file-name">
-                    <span class="file-icon html">🖼️</span>
-                    <span>hd.html</span>
-                </div>
-            </a>
         </div>
 
-        <footer>
-            <span id="serverIP">Server running</span>
-        </footer>
+        <!-- RESULT SECTION -->
+        <div id="result-section" class="hidden fade-in">
+            <!-- Loading Overlay -->
+            <div id="download-loading" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
+                <div class="text-center">
+                    <div class="animate-spin w-16 h-16 border-4 border-yellow-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p class="text-yellow-500 font-bold text-lg">Generating...</p>
+                </div>
+            </div>
+
+            <div class="flex justify-center py-4">
+                <div id="final-card" class="slide-up">
+                    <!-- Header with Image -->
+                    <div id="display-cover-frame" class="card-header cursor-zoom-in" onclick="zoomImage()">
+                        <img id="display-image" src="" alt="Card Cover">
+                        
+                        <!-- Rarity Badge - Right -->
+                        <div id="display-rarity-badge" class="rarity-badge rarity-common">COMMON</div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="card-body">
+                        <!-- Title -->
+                        <h2 id="display-title" class="card-title glow-gold text-white text-center">SKILL NAME</h2>
+
+                        <!-- Divider -->
+                        <div class="card-divider"></div>
+
+                        <!-- Description -->
+                        <div id="display-description" class="card-description">
+                            Deskripsi skill akan muncul di sini...
+                        </div>
+
+                        <!-- Type & Price -->
+                        <div class="flex justify-between items-center mt-6 pt-4 border-t border-[#2a2a45]">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-gray-500 font-bold uppercase">Skill Type:</span>
+                                <span id="display-skill-type" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#2a2a4a] text-gray-300 border border-[#3d3d5c]">ACTIVE</span>
+                            </div>
+                            <div id="price-container" class="hidden flex items-center gap-2">
+                                <span class="text-[10px] text-gray-500 font-bold uppercase">Price:</span>
+                                <span id="display-price" class="price-inline text-sm font-bold"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-center gap-4 mt-4">
+                <button onclick="downloadCard()" class="btn-primary text-xs px-8 py-4 flex items-center gap-2">
+                    <span>⬇</span> Download PNG
+                </button>
+                <button onclick="backToInput()" class="btn-secondary text-xs uppercase tracking-wider flex items-center gap-2">
+                    <span>←</span> Kembali
+                </button>
+            </div>
+        </div>
     </div>
+
+    <!-- Zoom Overlay -->
+    <div id="image-overlay" onclick="closeZoom()">
+        <img id="zoomed-img" src="" alt="Full View">
+    </div>
+
     <script>
-        document.getElementById('serverIP').textContent = window.location.hostname;
-        document.getElementById('currentPath').textContent = window.location.pathname === '/' ? '/' : window.location.pathname;
+        // Price Toggle
+        function togglePriceInput() {
+            const checkbox = document.getElementById('enable-price');
+            const container = document.getElementById('price-input-container');
+            
+            if (checkbox.checked) {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        function updateCardPrice() {
+            const price = document.getElementById('input-price').value;
+            const priceContainer = document.getElementById('price-container');
+            const priceInline = document.getElementById('display-price');
+            if (price) {
+                priceContainer.classList.remove('hidden');
+                priceInline.textContent = price;
+            }
+        }
+
+        // Range Slider Listeners
+        document.getElementById('size-cover').addEventListener('input', (e) => {
+            document.getElementById('val-cover').textContent = e.target.value;
+            const frame = document.getElementById('display-cover-frame');
+            if(frame) frame.style.height = e.target.value + 'px';
+        });
+
+        // Image offset slider
+        document.getElementById('img-offset').addEventListener('input', (e) => {
+            document.getElementById('val-offset').textContent = e.target.value;
+            const img = document.getElementById('display-image');
+            if(img) img.style.objectPosition = `center ${e.target.value}%`;
+        });
+
+        document.getElementById('size-title').addEventListener('input', (e) => {
+            document.getElementById('val-title').textContent = e.target.value;
+        });
+
+        document.getElementById('size-desc').addEventListener('input', (e) => {
+            document.getElementById('val-desc').textContent = e.target.value;
+        });
+
+        function setAlign(align) {
+            document.getElementById('input-align').value = align;
+            const buttons = document.querySelectorAll('#input-section button[onclick^="setAlign"]');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-yellow-600');
+                btn.classList.add('bg-[#1a1a2e]');
+            });
+            event.currentTarget.classList.remove('bg-[#1a1a2e]');
+            event.currentTarget.classList.add('bg-yellow-600');
+        }
+
+        function generateCard() {
+            const title = document.getElementById('input-title').value || "Unnamed Skill";
+            const skillType = document.getElementById('input-skill-type').value || "Active Skill";
+            const rarity = document.getElementById('input-rarity').value || "Common";
+            const description = document.getElementById('input-description').value || "No description available.";
+            const price = document.getElementById('input-price').value;
+            const enablePrice = document.getElementById('enable-price').checked;
+            
+            const align = document.getElementById('input-align').value;
+            const titleSize = document.getElementById('size-title').value;
+            const descSize = document.getElementById('size-desc').value;
+            const coverHeight = document.getElementById('size-cover').value;
+            const imgOffset = document.getElementById('img-offset').value;
+            
+            // Update card content
+            document.getElementById('display-title').textContent = title;
+            document.getElementById('display-skill-type').textContent = skillType || "ACTIVE";
+            document.getElementById('display-description').textContent = description;
+
+            // Apply sizes
+            document.getElementById('display-title').style.fontSize = titleSize + 'px';
+            document.getElementById('display-description').style.fontSize = descSize + 'px';
+            document.getElementById('display-description').style.textAlign = align;
+            document.getElementById('display-cover-frame').style.height = coverHeight + 'px';
+            
+            // Apply image offset
+            const displayImg = document.getElementById('display-image');
+            displayImg.style.objectPosition = `center ${imgOffset}%`;
+
+            // Rarity styling
+            const rarityLower = rarity.toLowerCase();
+            const rarityBadge = document.getElementById('display-rarity-badge');
+            const finalCard = document.getElementById('final-card');
+            const rarityColor = getRarityColor(rarityLower);
+            
+            // Update rarity badge
+            rarityBadge.className = 'rarity-badge rarity-' + rarityLower;
+            rarityBadge.textContent = rarity;
+            
+            // Update card border
+            finalCard.style.borderColor = rarityColor;
+            
+            // Show/hide inline price with rarity color
+            const priceContainer = document.getElementById('price-container');
+            const priceInline = document.getElementById('display-price');
+            if (enablePrice && price) {
+                priceContainer.classList.remove('hidden');
+                priceInline.textContent = price;
+                priceInline.style.color = rarityColor;
+            } else {
+                priceContainer.classList.add('hidden');
+            }
+
+            // Load image
+            const imageInput = document.getElementById('input-image');
+            if (imageInput.files && imageInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('display-image').src = e.target.result;
+                    document.getElementById('zoomed-img').src = e.target.result;
+                    toggleView();
+                }
+                reader.readAsDataURL(imageInput.files[0]);
+            } else {
+                const placeholder = "https://via.placeholder.com/400x280/1a1a2e/ffd700?text=UNGGAH+GAMBAR";
+                document.getElementById('display-image').src = placeholder;
+                document.getElementById('zoomed-img').src = placeholder;
+                toggleView();
+            }
+        }
+
+        function getRarityColor(rarity) {
+            const colors = {
+                'common': '#6b7280',
+                'uncommon': '#22c55e',
+                'rare': '#3b82f6',
+                'epic': '#a855f7',
+                'legendary': '#f59e0b',
+                'mythic': '#ec4899',
+                'exotic': '#06b6d4',
+                'transcendent': '#8b5cf6',
+                'forbidden': '#ef4444',
+                'celestial': '#fbbf24',
+                'divine': '#fb923c',
+                'omniversal': '#e879f9',
+                'primordial': '#14b8a6',
+                'cosmic': '#6366f1',
+                'quantum': '#2dd4bf',
+                'eternal': '#f472b6',
+                'infinite': '#a78bfa',
+                'absolute': '#e2e8f0',
+                'artifact': '#f97316',
+                'special': '#22d3ee'
+            };
+            return colors[rarity] || '#3d3d5c';
+        }
+
+        async function downloadCard() {
+            const node = document.getElementById('final-card');
+            const loading = document.getElementById('download-loading');
+            
+            loading.classList.remove('hidden');
+            
+            try {
+                await new Promise(r => setTimeout(r, 300));
+
+                const dataUrl = await htmlToImage.toPng(node, {
+                    quality: 1,
+                    pixelRatio: 4,
+                    cacheBust: true,
+                });
+                
+                loading.classList.add('hidden');
+                
+                const link = document.createElement('a');
+                link.download = `FantasyCard_${document.getElementById('display-title').textContent}.png`;
+                link.href = dataUrl;
+                link.click();
+            } catch (error) {
+                loading.classList.add('hidden');
+                console.error('Download error:', error);
+            }
+        }
+
+        function zoomImage() {
+            document.getElementById('image-overlay').style.display = 'flex';
+        }
+
+        function closeZoom() {
+            document.getElementById('image-overlay').style.display = 'none';
+        }
+
+        function toggleView() {
+            document.getElementById('input-section').classList.toggle('hidden');
+            document.getElementById('result-section').classList.toggle('hidden');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function backToInput() {
+            toggleView();
+        }
     </script>
 </body>
 </html>

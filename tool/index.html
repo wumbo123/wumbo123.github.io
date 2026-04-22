@@ -120,6 +120,122 @@
             </div>
         </div>
 
+        <!-- CROP TAB -->
+        <div id="content-crop" class="tab-content w-full max-w-2xl space-y-6">
+            <div class="glass-panel p-6 rounded-2xl text-center">
+                <label class="block text-sm font-semibold mb-4 text-left text-white/80">1. Unggah Gambar</label>
+                <input type="file" id="crop-fileInput" accept="image/*" class="block w-full text-sm text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-500/30 file:text-emerald-300 hover:file:bg-emerald-500/40 cursor-pointer" />
+            </div>
+
+            <div id="crop-settings" class="hidden space-y-6">
+                <div class="glass-panel p-6 rounded-2xl">
+                    <label class="block text-sm font-semibold mb-4 text-white/80">2. Tentukan Arah Potongan</label>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <button onclick="cropSetDir('horizontal')" id="btn-horizontal" class="glass-btn flex flex-col items-center justify-center p-4 rounded-xl">
+                            <span class="font-bold text-white">Horizontal</span>
+                            <span class="text-xs text-white/50">(Bagi Kolom)</span>
+                        </button>
+                        <button onclick="cropSetDir('vertical')" id="btn-vertical" class="glass-btn flex flex-col items-center justify-center p-4 rounded-xl">
+                            <span class="font-bold text-white">Vertikal</span>
+                            <span class="text-xs text-white/50">(Bagi Baris)</span>
+                        </button>
+                        <button onclick="cropSetDir('both')" id="btn-both" class="glass-btn flex flex-col items-center justify-center p-4 rounded-xl border-blue-500 bg-blue-500/20">
+                            <span class="font-bold text-blue-400">Keduanya</span>
+                            <span class="text-xs text-blue-400/70">(Grid)</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-bold text-white/50 mb-1 uppercase">Jumlah Kolom</label>
+                            <input type="number" id="crop-cols" value="1" min="1" class="w-full p-3 bg-white/5 border border-white/10 rounded-lg focus:border-blue-500 outline-none transition text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-white/50 mb-1 uppercase">Jumlah Baris</label>
+                            <input type="number" id="crop-rows" value="1" min="1" class="w-full p-3 bg-white/5 border border-white/10 rounded-lg focus:border-blue-500 outline-none transition text-white">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-white/50 mb-1 uppercase">Format Output</label>
+                        <select id="crop-format" class="w-full p-3 bg-white/5 border border-white/10 rounded-lg focus:border-blue-500 outline-none transition text-white">
+                            <option value="webp" class="text-black">WebP</option>
+                            <option value="png" class="text-black">PNG</option>
+                            <option value="jpeg" class="text-black">JPEG</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-white/50 mb-1 uppercase">Kualitas: <span id="quality-value" class="text-blue-400">90%</span></label>
+                        <input type="range" id="crop-quality" min="50" max="100" value="90" class="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    </div>
+
+                    <div class="flex items-center gap-3 p-4 bg-purple-500/10 rounded-2xl border border-purple-500/20 mb-4">
+                        <input type="checkbox" id="crop-flavor-check" class="w-5 h-5 rounded border-purple-400 text-purple-500 cursor-pointer">
+                        <label for="crop-flavor-check" class="text-sm font-medium text-white/70 cursor-pointer select-none">
+                            Tambahkan Flavor Teks
+                        </label>
+                    </div>
+
+                    <div id="crop-flavor-input-wrapper" class="hidden mb-4">
+                        <label class="block text-xs font-bold text-white/50 mb-1 uppercase">Flavor Teks</label>
+                        <input type="text" id="crop-flavor-text" placeholder="Contoh: chapter_01" class="w-full p-3 bg-white/5 border border-white/10 rounded-lg focus:border-purple-500 outline-none transition text-white">
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl text-center">
+                    <label class="block text-sm font-semibold mb-4 text-left text-white/80">3. Pratinjau Garis Potong</label>
+                    <div class="relative inline-block border-2 border-white/20 rounded-lg overflow-hidden bg-black/30">
+                        <div class="relative">
+                            <img id="crop-preview-img" class="max-w-full h-auto block" style="max-height: 400px;" src="" alt="">
+                            <div id="crop-grid-overlay"></div>
+                        </div>
+                    </div>
+                    <div id="crop-infoBox" class="mt-4 p-4 bg-blue-500/10 text-blue-300 rounded-lg text-sm font-medium"></div>
+                </div>
+
+                <button onclick="cropGenerate()" id="crop-generate-btn" class="w-full py-4 bg-blue-600 text-white font-bold text-lg rounded-xl shadow-lg shadow-blue-900/50 hover:bg-blue-700 transition transform active:scale-95 uppercase tracking-wider">
+                    Potong Gambar Sekarang
+                </button>
+            </div>
+
+            <div id="crop-loading" class="hidden text-center py-8">
+                <div class="w-full max-w-md mx-auto">
+                    <p class="text-white/70 mb-3 font-medium">Memproses gambar...</p>
+                    <div class="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                        <div id="crop-loading-bar" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full rounded-full transition-all duration-200" style="width: 0%"></div>
+                    </div>
+                    <p id="crop-loading-progress" class="text-white/50 text-sm mt-2">0 / 0</p>
+                </div>
+            </div>
+
+            <div id="crop-result" class="hidden space-y-8">
+                <div>
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-white">Hasil Potongan</h2>
+                        <button id="crop-downloadAllBtn" class="px-6 py-2 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 shadow-lg">
+                            UNDUH SEMUA (.ZIP)
+                        </button>
+                    </div>
+                    <div id="crop-results" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                            JSON Result
+                        </h3>
+                        <button onclick="copyJSON()" class="text-xs bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition font-bold tracking-widest uppercase text-white/80">
+                            <span id="copyText">Salin JSON</span>
+                        </button>
+                    </div>
+                    <pre id="jsonOutput" class="text-[11px] md:text-[12px] leading-relaxed overflow-auto max-h-[400px] bg-black/50 p-4 rounded-xl font-mono text-blue-300"></pre>
+                </div>
+            </div>
+        </div>
+
         <footer class="text-center py-8 text-white/30 text-sm">
             <p class="font-medium">Image Tools • Made with ✦</p>
         </footer>
@@ -351,33 +467,22 @@
 
         function cropSetDir(dir) {
             cropDir = dir;
-            document.querySelectorAll('#crop-settings .glass-btn').forEach(btn => {
+            document.querySelectorAll('.glass-btn').forEach(btn => {
                 btn.classList.remove('border-blue-500', 'bg-blue-500/20');
-                btn.querySelector('span').classList.remove('text-blue-400');
-                btn.querySelector('span').classList.add('text-white');
-                btn.querySelectorAll('span')[1]?.classList.remove('text-blue-400/70');
+                btn.classList.add('border-white/10');
             });
-            const activeBtn = document.getElementById(`btn-${dir}`);
-            activeBtn.classList.add('border-blue-500', 'bg-blue-500/20');
-            activeBtn.querySelector('span').classList.add('text-blue-400');
-            activeBtn.querySelector('span').classList.remove('text-white');
-            if(activeBtn.querySelectorAll('span')[1]) {
-                activeBtn.querySelectorAll('span')[1].classList.add('text-blue-400/70');
-            }
+            document.getElementById(`btn-${dir}`).classList.add('border-blue-500', 'bg-blue-500/20');
+            document.getElementById(`btn-${dir}`).classList.remove('border-white/10');
 
             if(dir === 'horizontal') {
                 document.getElementById('crop-rows').value = 1;
-                document.getElementById('crop-rows').parentElement.classList.add('hidden');
-                document.getElementById('crop-cols').parentElement.classList.remove('hidden');
+                document.getElementById('crop-rows').disabled = true;
                 document.getElementById('crop-cols').disabled = false;
             } else if(dir === 'vertical') {
                 document.getElementById('crop-cols').value = 1;
-                document.getElementById('crop-cols').parentElement.classList.add('hidden');
-                document.getElementById('crop-rows').parentElement.classList.remove('hidden');
+                document.getElementById('crop-cols').disabled = true;
                 document.getElementById('crop-rows').disabled = false;
             } else {
-                document.getElementById('crop-rows').parentElement.classList.remove('hidden');
-                document.getElementById('crop-cols').parentElement.classList.remove('hidden');
                 document.getElementById('crop-rows').disabled = false;
                 document.getElementById('crop-cols').disabled = false;
             }
@@ -385,17 +490,9 @@
         }
 
         function cropUpdateGrid() {
+            if (!cropImg) return;
             const c = parseInt(document.getElementById('crop-cols').value) || 1;
             const r = parseInt(document.getElementById('crop-rows').value) || 1;
-            const outW = parseInt(document.getElementById('output-size').value) || 1080;
-            const outH = sizeMode === 'square' ? outW : (parseInt(document.getElementById('output-height').value) || 900);
-            
-            if (!cropImg) {
-                const sizeLabel = sizeMode === 'square' ? `${outW}x${outW}` : `${outW}x${outH}`;
-                document.getElementById('crop-infoBox').innerHTML = `Ukuran Akhir: <b>${c * outW} x ${r * outH} px</b>. Terbagi menjadi <b>${c * r} bagian</b> ${sizeLabel} px.`;
-                return;
-            }
-            
             const overlay = document.getElementById('crop-grid-overlay');
             overlay.innerHTML = '';
             overlay.style.position = 'absolute';
@@ -421,41 +518,25 @@
                 overlay.appendChild(l);
             }
             
-            const sizeLabel = sizeMode === 'square' ? `${outW}x${outW}` : `${outW}x${outH}`;
-            document.getElementById('crop-infoBox').innerHTML = `Ukuran Akhir: <b>${c * outW} x ${r * outH} px</b>. Terbagi menjadi <b>${c * r} bagian</b> ${sizeLabel} px.`;
+            document.getElementById('crop-infoBox').innerHTML = `Ukuran Akhir: <b>${c * 1080} x ${r * 1080} px</b>. Terbagi menjadi <b>${c * r} bagian</b> 1080x1080 px.`;
         }
 
         document.getElementById('crop-cols').addEventListener('input', cropUpdateGrid);
         document.getElementById('crop-rows').addEventListener('input', cropUpdateGrid);
-        document.getElementById('output-size').addEventListener('input', cropUpdateGrid);
-        
-        let sizeMode = 'square';
-        
-        function toggleSizeMode(event) {
-            sizeMode = sizeMode === 'square' ? 'rect' : 'square';
-            const heightInput = document.getElementById('output-height');
-            const toggleBtn = document.getElementById('toggleSizeModeBtn');
-            
-            if (sizeMode === 'rect') {
-                heightInput.classList.remove('hidden');
-                const w = parseInt(document.getElementById('output-size').value) || 1080;
-                heightInput.value = Math.round(w * 2.009);
-            } else {
-                heightInput.classList.add('hidden');
-            }
-            cropUpdateGrid();
-        }
 
-        function getLocalDateTime() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-        }
+        document.getElementById('crop-flavor-check').addEventListener('change', function() {
+            const inputWrapper = document.getElementById('crop-flavor-input-wrapper');
+            if (this.checked) {
+                inputWrapper.classList.remove('hidden');
+            } else {
+                inputWrapper.classList.add('hidden');
+                document.getElementById('crop-flavor-text').value = '';
+            }
+        });
+
+        document.getElementById('crop-quality').addEventListener('input', function() {
+            document.getElementById('quality-value').textContent = this.value + '%';
+        });
 
         function getShortUUID() {
             const length = Math.floor(Math.random() * 4) + 5;
@@ -463,12 +544,13 @@
         }
 
         function cropGenerate() {
+            const startTime = Date.now();
             const cols = parseInt(document.getElementById('crop-cols').value) || 1;
             const rows = parseInt(document.getElementById('crop-rows').value) || 1;
             const outputFormat = document.getElementById('crop-format').value;
-            const outputW = parseInt(document.getElementById('output-size').value) || 1080;
-            const outputH = sizeMode === 'rect' ? (parseInt(document.getElementById('output-height').value) || Math.round(outputW * 2.009)) : outputW;
-            const flavorText = document.getElementById('flavor-text-toggle').checked ? document.getElementById('flavor-text-input').value : '';
+            const quality = parseInt(document.getElementById('crop-quality').value) / 100;
+            const flavorCheck = document.getElementById('crop-flavor-check').checked;
+            const flavorText = flavorCheck ? document.getElementById('crop-flavor-text').value.trim() : null;
             const resultsGrid = document.getElementById('crop-results');
             const resultArea = document.getElementById('crop-result');
             const jsonOutput = document.getElementById('jsonOutput');
@@ -477,18 +559,17 @@
             document.getElementById('crop-loading').classList.remove('hidden');
             document.getElementById('crop-result').classList.add('hidden');
             document.getElementById('crop-loading').scrollIntoView({ behavior: 'smooth' });
-            document.getElementById('crop-progress-bar').style.width = '0%';
             
             resultsGrid.innerHTML = '';
 
             setTimeout(() => {
-                const startTime = Date.now();
-                
                 const zip = new JSZip();
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                canvas.width = outputW;
-                canvas.height = outputH;
+                canvas.width = 1080;
+                canvas.height = 1080;
+
+                let totalOutputSize = 0;
 
                 const finalData = {
                     metadata: {
@@ -498,20 +579,21 @@
                             width: cropImg.width,
                             height: cropImg.height
                         },
-                        timestamp: getLocalDateTime()
+                        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+                        processing_time_ms: Date.now() - startTime
                     },
                     config: {
                         mode: cropDir,
                         output_format: outputFormat,
-                        output_width: outputW,
-                        output_height: outputH,
-                        flavor_text: flavorText || null,
+                        quality: quality,
+                        flavor_text: flavorText,
                         division: {
                             vertical: rows,
                             horizontal: cols
                         },
                         total_pieces: rows * cols
                     },
+                    total_output_size: 0,
                     pieces: []
                 };
 
@@ -522,135 +604,71 @@
                 let counter = 1;
                 let processed = 0;
 
-                function processNextPiece(r, c) {
-                    if (r >= rows) {
-                        finishCrop();
-                        return;
-                    }
-                    
-                    const sX = (c / cols) * cropImg.width;
-                    const sY = (r / rows) * cropImg.height;
-                    const sW = cropImg.width / cols;
-                    const sH = cropImg.height / rows;
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const sX = (c / cols) * cropImg.width;
+                        const sY = (r / rows) * cropImg.height;
+                        const sW = cropImg.width / cols;
+                        const sH = cropImg.height / rows;
 
-                    ctx.clearRect(0, 0, outputW, outputH);
-                    ctx.drawImage(cropImg, sX, sY, sW, sH, 0, 0, outputW, outputH);
-                    
-                    const imgData = canvas.toDataURL(mimeType, 0.9);
-                    const fileName = `crop_${cropDir}_row${r + 1}_col${c + 1}_${getShortUUID()}.${ext}`;
+                        ctx.clearRect(0, 0, 1080, 1080);
+                        ctx.drawImage(cropImg, sX, sY, sW, sH, 0, 0, 1080, 1080);
+                        
+                        const imgData = canvas.toDataURL(mimeType, quality);
+                        const flavorPrefix = flavorText ? `_${flavorText}` : '';
+                        const fileName = `crop_${cropDir}_row${r + 1}_col${c + 1}${flavorPrefix}_${getShortUUID()}.${ext}`;
 
-                    const datetime = getLocalDateTime();
+                        const now = new Date();
+                        const timestamp = now.toISOString().replace('T', ' ').substring(0, 19);
 
-                    const b64 = imgData.split(',')[1];
-                    const outputFileSize = b64.length * 0.75;
-                    const checksum = b64.substring(0, 50);
+                        const b64 = imgData.split(',')[1];
+                        const checksum = b64.substring(0, 50);
+                        const outputFileSize = Math.round((b64.length * 3) / 4);
+                        totalOutputSize += outputFileSize;
 
-                    finalData.pieces.push({
-                        id: counter++,
-                        filename: fileName,
-                        datetime: datetime,
-                        output_file_size: Math.round(outputFileSize),
-                        checksum: checksum
-                    });
-
-                    const card = document.createElement('div');
-                    card.className = 'crop-card p-2';
-                    card.innerHTML = `
-                        <img src="${imgData}" class="w-full rounded-lg mb-2">
-                        <div class="text-[9px] font-mono text-white/50 truncate mb-2 px-1">${fileName}</div>
-                        <a href="${imgData}" download="${fileName}" class="text-[10px] bg-blue-500/20 text-blue-300 px-3 py-1.5 rounded font-bold hover:bg-blue-500/40 transition block text-center">Unduh</a>
-                    `;
-                    resultsGrid.appendChild(card);
-
-                    zip.file(fileName, b64, {base64: true});
-                    
-                    processed++;
-                    const progressPercent = (processed / totalPieces) * 100;
-                    document.getElementById('crop-progress-bar').style.width = `${progressPercent}%`;
-                    document.getElementById('crop-loading-progress').textContent = `${processed} / ${totalPieces}`;
-                    
-                    let nextC = c + 1;
-                    let nextR = r;
-                    if (nextC >= cols) {
-                        nextC = 0;
-                        nextR = r + 1;
-                    }
-                    
-                    if (nextR < rows) {
-                        setTimeout(() => processNextPiece(nextR, nextC), 10);
-                    } else {
-                        finishCrop();
-                    }
-                }
-                
-                function finishCrop() {
-                    const endTime = Date.now();
-                    finalData.metadata.processing_time_ms = endTime - startTime;
-
-                    document.getElementById('crop-loading').classList.add('hidden');
-                    document.getElementById('crop-result').classList.remove('hidden');
-                    document.getElementById('crop-settings').classList.remove('hidden');
-                    
-                    jsonOutput.textContent = JSON.stringify(finalData, null, 2);
-
-                    document.getElementById('crop-downloadAllBtn').onclick = function() {
-                        zip.generateAsync({type:"blob"}).then(blob => {
-                            const link = document.createElement('a');
-                            link.href = URL.createObjectURL(blob);
-                            link.download = `result_${cropFileName.split('.')[0]}.zip`;
-                            link.click();
+                        finalData.pieces.push({
+                            id: counter++,
+                            filename: fileName,
+                            datetime: timestamp,
+                            output_file_size: outputFileSize,
+                            checksum: checksum
                         });
-                    };
+
+                        const card = document.createElement('div');
+                        card.className = 'crop-card p-2';
+                        card.innerHTML = `
+                            <img src="${imgData}" class="w-full rounded-lg mb-2">
+                            <div class="text-[9px] font-mono text-white/50 truncate mb-2 px-1">${fileName}</div>
+                            <a href="${imgData}" download="${fileName}" class="text-[10px] bg-blue-500/20 text-blue-300 px-3 py-1.5 rounded font-bold hover:bg-blue-500/40 transition block text-center">Unduh</a>
+                        `;
+                        resultsGrid.appendChild(card);
+
+                        zip.file(fileName, b64, {base64: true});
+                        
+                        processed++;
+                        const progressPercent = Math.round((processed / totalPieces) * 100);
+                        document.getElementById('crop-loading-bar').style.width = progressPercent + '%';
+                        document.getElementById('crop-loading-progress').textContent = `${processed} / ${totalPieces}`;
+                    }
                 }
+
+                finalData.total_output_size = totalOutputSize;
+
+                document.getElementById('crop-loading').classList.add('hidden');
+                document.getElementById('crop-result').classList.remove('hidden');
+                document.getElementById('crop-settings').classList.remove('hidden');
                 
-                processNextPiece(0, 0);
+                jsonOutput.textContent = JSON.stringify(finalData, null, 2);
+
+                document.getElementById('crop-downloadAllBtn').onclick = function() {
+                    zip.generateAsync({type:"blob"}).then(blob => {
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = `result_${cropFileName.split('.')[0]}.zip`;
+                        link.click();
+                    });
+                };
             }, 100);
-        }
-
-        function setOutputSize(size, event) {
-            const target = event?.target;
-            const isSquare = target?.dataset?.square === 'true';
-            const customW = parseInt(target?.dataset?.w);
-            const customH = parseInt(target?.dataset?.h);
-            
-            if (customW && customH) {
-                sizeMode = 'rect';
-                document.getElementById('output-size').value = customW;
-                document.getElementById('output-height').value = customH;
-                document.getElementById('output-height').classList.remove('hidden');
-            } else if (isSquare) {
-                if (sizeMode === 'rect') {
-                    sizeMode = 'square';
-                    document.getElementById('output-height').classList.add('hidden');
-                }
-                document.getElementById('output-size').value = size;
-            } else {
-                if (sizeMode === 'rect') {
-                    sizeMode = 'square';
-                    document.getElementById('output-height').classList.add('hidden');
-                }
-                document.getElementById('output-size').value = size;
-            }
-            cropUpdateGrid();
-            document.querySelectorAll('.preset-size-btn').forEach(btn => {
-                btn.classList.remove('bg-blue-500/20', 'border-blue-500/50', 'text-blue-300');
-                btn.classList.add('bg-white/5', 'border-white/10', 'text-white/70');
-            });
-            if(target) {
-                target.classList.remove('bg-white/5', 'border-white/10', 'text-white/70');
-                target.classList.add('bg-blue-500/20', 'border-blue-500/50', 'text-blue-300');
-            }
-        }
-
-        function toggleFlavorInput() {
-            const toggle = document.getElementById('flavor-text-toggle');
-            const input = document.getElementById('flavor-text-input');
-            if (toggle.checked) {
-                input.classList.remove('hidden');
-            } else {
-                input.classList.add('hidden');
-                input.value = '';
-            }
         }
 
         function copyJSON() {

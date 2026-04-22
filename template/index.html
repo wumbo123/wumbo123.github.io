@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HD Template Engine - Live Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .preview-box {
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 639 / 883;
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: aspect-ratio 0.3s ease;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        input[type=range] {
+            accent-color: #4f46e5;
+        }
+
+        /* Custom Checkbox */
+        .checkbox-custom {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="text-slate-900 min-h-screen">
+
+    <div class="max-w-6xl mx-auto px-6 py-12">
+        <div class="flex flex-col lg:flex-row gap-12 items-start">
+            
+            <!-- Panel Kontrol -->
+            <div class="w-full lg:w-5/12 space-y-6">
+                <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
+                    <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 mb-2">Live Template HD</h1>
+                    <p class="text-slate-500 mb-8 text-sm">Semua perubahan diterapkan langsung ke pratinjau.</p>
+
+                    <div class="space-y-6">
+                        <!-- Input Gambar Utama -->
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-3">1. Gambar Utama (Tidak Terpotong)</label>
+                            <input type="file" id="mainImageInput" class="hidden" accept="image/*">
+                            <label for="mainImageInput" class="flex items-center gap-4 p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-200 transition-all">
+                                <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                    <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                </div>
+                                <span class="text-sm font-bold text-slate-700 truncate" id="mainFileName">Pilih Foto Utama...</span>
+                            </label>
+                        </div>
+
+                        <!-- Opsi Latar Belakang -->
+                        <div class="pt-4 border-t border-slate-100">
+                            <div class="flex items-center gap-3 mb-4">
+                                <input type="checkbox" id="customBgToggle" class="checkbox-custom rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                <label for="customBgToggle" class="text-sm font-bold text-slate-700 cursor-pointer">Gunakan Gambar Latar Berbeda</label>
+                            </div>
+
+                            <div id="bgInputContainer" class="hidden animate-in fade-in slide-in-from-top-2 duration-300">
+                                <input type="file" id="bgImageInput" class="hidden" accept="image/*">
+                                <label for="bgImageInput" class="flex items-center gap-4 p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all">
+                                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                        <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                    </div>
+                                    <span class="text-sm font-bold text-slate-700 truncate" id="bgFileName">Pilih Foto Latar...</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Settings -->
+                        <div class="grid grid-cols-1 gap-4 pt-4 border-t border-slate-100">
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Intensitas Blur</label>
+                                    <span id="blurLabel" class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">15px</span>
+                                </div>
+                                <input type="range" id="blurRange" min="0" max="60" value="15" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer">
+                            </div>
+
+                            <div>
+                                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Resolusi Export</label>
+                                <select id="resSize" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-700 border-none focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    <option value="1x" data-w="639" data-h="883">Standar (639×883)</option>
+                                    <option value="2x" data-w="1278" data-h="1766" selected>HD Ultra (1278×1766)</option>
+                                    <option value="3x" data-w="1917" data-h="2649">Maximum (1917×2649)</option>
+                                    <option value="1:1-1x" data-w="1080" data-h="1080">1:1 (1080×1080)</option>
+                                    <option value="1:1-2x" data-w="2160" data-h="2160">1:1 HD Ultra (2160×2160)</option>
+                                    <option value="1:1-3x" data-w="3240" data-h="3240">1:1 Maximum (3240×3240)</option>
+                                    <option value="4:5-1x" data-w="1440" data-h="1800">4:5 (1440×1800)</option>
+                                    <option value="4:5-2x" data-w="2880" data-h="3600">4:5 HD Ultra (2880×3600)</option>
+                                    <option value="4:5-3x" data-w="4320" data-h="5400">4:5 Maximum (4320×5400)</option>
+                                    <option value="3:4-1x" data-w="1080" data-h="1350">3:4 (1080×1350)</option>
+                                    <option value="3:4-2x" data-w="2160" data-h="2700">3:4 HD Ultra (2160×2700)</option>
+                                    <option value="3:4-3x" data-w="3240" data-h="4050">3:4 Maximum (3240×4050)</option>
+                                    <option value="9:16-1x" data-w="1080" data-h="1920">9:16 (1080×1920)</option>
+                                    <option value="9:16-2x" data-w="2160" data-h="3840">9:16 HD Ultra (2160×3840)</option>
+                                    <option value="9:16-3x" data-w="3240" data-h="5760">9:16 Maximum (3240×5760)</option>
+                                </select>
+                            </div>
+
+                            <!-- Colored Background Toggle -->
+                            <div class="pt-4 border-t border-slate-100">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <input type="checkbox" id="coloredBgToggle" class="checkbox-custom rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                    <label for="coloredBgToggle" class="text-sm font-bold text-slate-700 cursor-pointer">Latar Belakang Berwarna</label>
+                                </div>
+                                <div id="colorPickerContainer" class="hidden animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div class="mb-4">
+                                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Pilih Warna</label>
+                                        <div class="flex gap-2 flex-wrap mb-3">
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#ffffff" style="background-color: #ffffff"></button>
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#f8fafc" style="background-color: #f8fafc"></button>
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#f1f5f9" style="background-color: #f1f5f9"></button>
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#e2e8f0" style="background-color: #e2e8f0"></button>
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#0f172a" style="background-color: #0f172a"></button>
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#1e293b" style="background-color: #1e293b"></button>
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#334155" style="background-color: #334155"></button>
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#dc2626" style="background-color: #dc2626"></button>
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#ea580c" style="background-color: #ea580c"></button>
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#ca8a04" style="background-color: #ca8a04"></button>
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#16a34a" style="background-color: #16a34a"></button>
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#0891b2" style="background-color: #0891b2"></button>
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#2563eb" style="background-color: #2563eb"></button>
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#7c3aed" style="background-color: #7c3aed"></button>
+                                            <button class="color-swatch w-8 h-8 rounded-lg cursor-pointer border-2 border-transparent hover:border-slate-400 transition-all" data-color="#db2777" style="background-color: #db2777"></button>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <input type="color" id="colorInput" value="#ffffff" class="w-10 h-10 rounded-lg cursor-pointer border-0 p-0">
+                                            <input type="text" id="hexInput" value="#ffffff" placeholder="#" maxlength="7" class="flex-1 p-3 bg-slate-50 rounded-xl font-mono font-bold text-slate-700 border-none focus:ring-2 focus:ring-indigo-500 outline-none uppercase">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Pratinjau -->
+            <div class="w-full lg:w-7/12 flex flex-col items-center lg:items-start">
+                <div class="preview-box border border-slate-200">
+                    <div id="emptyMsg" class="text-center p-12">
+                        <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                            <svg class="w-10 h-10 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        </div>
+                        <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Silakan pilih gambar utama</p>
+                    </div>
+                    <canvas id="outputCanvas"></canvas>
+                </div>
+
+                <div id="downloadContainer" class="hidden mt-8 w-full max-w-[400px]">
+                    <div class="flex gap-2 mb-3">
+                        <button class="format-btn flex-1 py-2 rounded-xl font-bold text-sm transition-all border-2 border-indigo-600 bg-indigo-600 text-white" data-format="png">PNG</button>
+                        <button class="format-btn flex-1 py-2 rounded-xl font-bold text-sm transition-all border-2 border-slate-200 bg-white text-slate-700 hover:border-indigo-600" data-format="webp">WebP</button>
+                        <button class="format-btn flex-1 py-2 rounded-xl font-bold text-sm transition-all border-2 border-slate-200 bg-white text-slate-700 hover:border-indigo-600" data-format="jpg">JPG</button>
+                    </div>
+                    <button id="downloadBtn" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-5 rounded-[1.5rem] transition-all transform active:scale-95 shadow-2xl flex items-center justify-center gap-3">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        UNDUH HASIL HD
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('outputCanvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        
+        // Input Elements
+        const mainInput = document.getElementById('mainImageInput');
+        const bgInput = document.getElementById('bgImageInput');
+        const customBgToggle = document.getElementById('customBgToggle');
+        const bgInputContainer = document.getElementById('bgInputContainer');
+        const blurRange = document.getElementById('blurRange');
+        const resSize = document.getElementById('resSize');
+        const coloredBgToggle = document.getElementById('coloredBgToggle');
+        const colorPickerContainer = document.getElementById('colorPickerContainer');
+        const colorSwatches = document.querySelectorAll('.color-swatch');
+        const colorInput = document.getElementById('colorInput');
+        const hexInput = document.getElementById('hexInput');
+        const formatBtns = document.querySelectorAll('.format-btn');
+        
+        // Display Elements
+        const mainFileName = document.getElementById('mainFileName');
+        const bgFileName = document.getElementById('bgFileName');
+        const blurLabel = document.getElementById('blurLabel');
+        const emptyMsg = document.getElementById('emptyMsg');
+        const downloadContainer = document.getElementById('downloadContainer');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        let images = {
+            main: null,
+            customBg: null
+        };
+
+        let bgColor = null;
+        let selectedColor = '#ffffff';
+        let selectedFormat = 'png';
+
+        // --- Event Listeners ---
+
+        mainInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                mainFileName.textContent = file.name;
+                loadImage(file, 'main');
+            }
+        });
+
+        bgInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                bgFileName.textContent = file.name;
+                loadImage(file, 'customBg');
+            }
+        });
+
+        customBgToggle.addEventListener('change', (e) => {
+            bgInputContainer.classList.toggle('hidden', !e.target.checked);
+            updatePreview();
+        });
+
+        blurRange.addEventListener('input', (e) => {
+            blurLabel.textContent = e.target.value + 'px';
+            updatePreview();
+        });
+
+        resSize.addEventListener('change', () => {
+            updatePreview();
+            updateAspectRatio();
+        });
+
+        coloredBgToggle.addEventListener('change', (e) => {
+            colorPickerContainer.classList.toggle('hidden', !e.target.checked);
+            if (e.target.checked) {
+                bgColor = selectedColor;
+            } else {
+                bgColor = null;
+            }
+            updatePreview();
+        });
+
+        colorSwatches.forEach(swatch => {
+            swatch.addEventListener('click', () => {
+                colorSwatches.forEach(s => s.classList.replace('border-slate-400', 'border-transparent'));
+                swatch.classList.replace('border-transparent', 'border-slate-400');
+                selectedColor = swatch.dataset.color;
+                bgColor = selectedColor;
+                colorInput.value = selectedColor;
+                hexInput.value = selectedColor;
+                updatePreview();
+            });
+        });
+
+        colorInput.addEventListener('input', (e) => {
+            selectedColor = e.target.value;
+            bgColor = selectedColor;
+            hexInput.value = e.target.value;
+            colorSwatches.forEach(s => s.classList.replace('border-slate-400', 'border-transparent'));
+            updatePreview();
+        });
+
+        hexInput.addEventListener('input', (e) => {
+            let val = e.target.value;
+            if (!val.startsWith('#')) val = '#' + val;
+            if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                selectedColor = val;
+                bgColor = val;
+                colorInput.value = val;
+                colorSwatches.forEach(s => s.classList.replace('border-slate-400', 'border-transparent'));
+                updatePreview();
+            }
+        });
+
+        formatBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                formatBtns.forEach(b => {
+                    b.classList.replace('border-indigo-600', 'border-slate-200');
+                    b.classList.replace('bg-indigo-600', 'bg-white');
+                    b.classList.replace('text-white', 'text-slate-700');
+                });
+                btn.classList.replace('border-slate-200', 'border-indigo-600');
+                btn.classList.replace('bg-white', 'bg-indigo-600');
+                btn.classList.replace('text-slate-700', 'text-white');
+                selectedFormat = btn.dataset.format;
+            });
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            const mimeType = selectedFormat === 'jpg' ? 'image/jpeg' : selectedFormat === 'webp' ? 'image/webp' : 'image/png';
+            const quality = selectedFormat === 'jpg' ? 0.95 : undefined;
+            const ext = selectedFormat === 'jpg' ? 'jpg' : selectedFormat;
+            const dataUrl = canvas.toDataURL(mimeType, quality);
+            const link = document.createElement('a');
+            link.download = `HD_Template_${Date.now()}.${ext}`;
+            link.href = dataUrl;
+            link.click();
+        });
+
+        // --- Core Functions ---
+
+        function loadImage(file, type) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    images[type] = img;
+                    updatePreview();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updatePreview() {
+            if (!images.main && !bgColor) return;
+
+            emptyMsg.style.display = 'none';
+            downloadContainer.classList.remove('hidden');
+
+            const selectedOption = resSize.options[resSize.selectedIndex];
+            const baseW = parseInt(selectedOption.dataset.w);
+            const baseH = parseInt(selectedOption.dataset.h);
+
+            // Set Canvas Resolution
+            canvas.width = baseW;
+            canvas.height = baseH;
+
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Smoothing
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            // 1. Background - Colored or Blurred Image
+            ctx.fillStyle = bgColor || '#ffffff';
+            ctx.fillRect(0, 0, w, h);
+
+            if (!bgColor) {
+                const bgSource = (customBgToggle.checked && images.customBg) ? images.customBg : images.main;
+                if (bgSource) {
+                    // Logic "Pass" / Cover untuk Background
+                    const bgRatio = Math.max(w / bgSource.width, h / bgSource.height);
+                    const bgW = bgSource.width * bgRatio;
+                    const bgH = bgSource.height * bgRatio;
+                    const bgX = (w - bgW) / 2;
+                    const bgY = (h - bgH) / 2;
+
+                    ctx.save();
+                    const blurVal = parseInt(blurRange.value);
+                    ctx.filter = `blur(${blurVal}px) brightness(0.9)`;
+                    ctx.drawImage(bgSource, bgX - 10, bgY - 10, bgW + 20, bgH + 20);
+                    ctx.restore();
+                    ctx.filter = 'none';
+
+                    // Overlay dark to pop the center image
+                    ctx.fillStyle = "rgba(0,0,0,0.1)";
+                    ctx.fillRect(0, 0, w, h);
+                }
+            }
+
+            if (!images.main) return;
+
+            // 2. Gambar Utama (Gak Terpotong / Contain Mode)
+            const mainRatio = Math.min(w / images.main.width, h / images.main.height);
+            const mainW = images.main.width * mainRatio;
+            const mainH = images.main.height * mainRatio;
+            const mainX = (w - mainW) / 2;
+            const mainY = (h - mainH) / 2;
+
+            // Add Soft Shadow to main image
+            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            ctx.shadowBlur = 30;
+            ctx.shadowOffsetY = 10;
+
+            ctx.drawImage(images.main, mainX, mainY, mainW, mainH);
+        }
+
+        function updateAspectRatio() {
+            const selectedOption = resSize.options[resSize.selectedIndex];
+            const baseW = parseInt(selectedOption.dataset.w);
+            const baseH = parseInt(selectedOption.dataset.h);
+            document.querySelector('.preview-box').style.aspectRatio = `${baseW} / ${baseH}`;
+        }
+    </script>
+</body>
+</html>
+
+
