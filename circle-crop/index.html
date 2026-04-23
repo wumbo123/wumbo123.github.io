@@ -17,6 +17,7 @@
             color: white;
         }
         .app-header {
+            position: relative;
             padding: 15px 20px;
             background: #1e1e1e;
             border-bottom: 1px solid #333;
@@ -25,6 +26,19 @@
         .app-header h1 {
             color: #4CAF50;
             font-size: 1.3rem;
+        }
+        .home-link {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .home-link:hover {
+            color: #fff;
         }
         .main-content {
             display: flex;
@@ -246,6 +260,7 @@
 </head>
 <body>
     <div class="app-header">
+        <a href="/" class="home-link">← Home</a>
         <h1>Buat Foto Bulat</h1>
     </div>
 

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Border Editor</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface2: #1e1e1e;
+      --border: #2a2a2a;
+      --text: #e5e5e5;
+      --text2: #666;
+      --accent: #fff;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow-x:hidden}
+    body{font-family:'Space Mono',monospace;background:var(--bg);color:var(--text);padding:8px;padding-bottom:70px}
+    .container{max-width:480px;margin:0 auto;position:relative}
+    h1{text-align:center;font-size:.75rem;color:var(--text2);margin-bottom:10px;letter-spacing:2px}
+    .home-link{position:absolute;top:0;left:0;color:var(--text2);text-decoration:none;font-size:.65rem;transition:color .2s}
+    .home-link:hover{color:var(--accent)}
+
+    .upload-box{border:1px dashed var(--border);border-radius:4px;padding:24px 12px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:8px}
+    .upload-box:hover{border-color:var(--text2)}
+    .upload-box input[type="file"]{display:none}
+    .upload-box p{color:var(--text2);font-size:.65rem}
+    .upload-box .browse{color:var(--accent)}
+
+    .preview{flex:1;background:var(--surface);border-radius:4px;padding:8px;display:flex;align-items:center;justify-content:center;min-height:280px;max-height:58vh;overflow:hidden;margin-bottom:8px}
+    #previewCanvas{max-width:96%;max-height:54vh;display:none;border-radius:2px;object-fit:contain}
+    .no-image{color:#333;font-size:.7rem;text-align:center}
+
+    .panel{display:flex;flex-direction:column;gap:6px}
+    .card{background:var(--surface);border-radius:4px;padding:10px}
+    .ctitle{font-size:.6rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+
+    .row{display:flex;gap:6px}
+    .col{flex:1;min-width:100px}
+    .col-box{background:var(--surface2);border-radius:3px;padding:6px}
+    .col-box label{display:block;font-size:.6rem;color:var(--text2);margin-bottom:4px}
+    .col-box input[type="range"]{width:100%;height:4px;-webkit-appearance:none;background:var(--border);border-radius:2px;outline:none;cursor:pointer}
+    .col-box input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:2px;background:var(--accent);cursor:pointer}
+    .col-box input[type="range"]::-moz-range-thumb{width:14px;height:14px;border-radius:2px;background:var(--accent);cursor:pointer;border:none}
+    .col-box .num{font-size:.6rem;color:var(--accent);text-align:center;margin-top:2px}
+    .col-box input[type="color"]{width:100%;height:24px;border:none;border-radius:3px;cursor:pointer;background:transparent;margin-top:4px}
+    .col-box input[type="color"]::-webkit-color-swatch{border:1px solid var(--border);border-radius:3px}
+
+    .preset{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:4px}
+    .preset button{padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;font-size:.55rem;cursor:pointer;color:var(--text2);transition:all .15s}
+    .preset button:hover{background:#252525}
+    .preset button.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+
+    select{width:100%;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:inherit;font-size:.65rem;outline:none;cursor:pointer}
+
+    .btnr{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+    .btn{flex:1;min-width:40px;padding:10px;border:none;border-radius:3px;font-size:.6rem;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.5px}
+    .btn:active{transform:scale(.98)}
+    .btn-dl{background:var(--accent);color:var(--bg)}
+    .btn-dl:hover{background:#ccc}
+    .btn-dl:disabled{background:var(--border);color:var(--text2);cursor:not-allowed}
+    .btn-s{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+    .btn-s:hover{background:#252525}
+
+    @media(max-width:420px){
+      body{padding:6px;padding-bottom:60px}
+      .preview{min-height:220px;max-height:50vh}
+      #previewCanvas{max-height:46vh}
+      .col{min-width:90px}
+      .btn{padding:8px;font-size:.55rem}
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <a href="/" class="home-link">← Home</a>
+  <h1>BORDER EDITOR</h1>
+
+  <div class="upload-box" id="uploadBox">
+    <input type="file" id="fileInput" accept="image/*">
+    <p>Klik atau <span class="browse">drag & drop</span> gambar</p>
+  </div>
+
+  <div class="preview">
+    <canvas id="previewCanvas"></canvas>
+    <div class="no-image" id="noImage">Upload gambar dulu</div>
+  </div>
+
+  <div class="panel">
+    <div class="card">
+      <div class="ctitle">Garis</div>
+      <div class="row">
+        <div class="col">
+          <div class="col-box">
+            <label>KIRI</label>
+            <input type="range" id="sL" min="0" max="100" value="20">
+            <div class="num" id="vL">20px</div>
+            <input type="range" id="oL" min="0" max="100" value="100">
+            <div class="num" id="voL">100%</div>
+            <input type="color" id="cL" value="#000000">
+          </div>
+        </div>
+        <div class="col">
+          <div class="col-box">
+            <label>KANAN</label>
+            <input type="range" id="sR" min="0" max="100" value="20">
+            <div class="num" id="vR">20px</div>
+            <input type="range" id="oR" min="0" max="100" value="100">
+            <div class="num" id="voR">100%</div>
+            <input type="color" id="cR" value="#000000">
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <div class="col">
+          <div class="col-box">
+            <label>ATAS</label>
+            <input type="range" id="sT" min="0" max="100" value="20">
+            <div class="num" id="vT">20px</div>
+            <input type="range" id="oT" min="0" max="100" value="100">
+            <div class="num" id="voT">100%</div>
+            <input type="color" id="cT" value="#000000">
+          </div>
+        </div>
+        <div class="col">
+          <div class="col-box">
+            <label>BAWAH</label>
+            <input type="range" id="sB" min="0" max="100" value="20">
+            <div class="num" id="vB">20px</div>
+            <input type="range" id="oB" min="0" max="100" value="100">
+            <div class="num" id="voB">100%</div>
+            <input type="color" id="cB" value="#000000">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="preset">
+        <button data-p="tipis">Tipis</button>
+        <button data-p="sedang">Sedang</button>
+        <button data-p="tebal">Tebal</button>
+        <button data-p="kotak">Kotak</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ctitle">Download</div>
+      <select id="sFmt">
+        <option value="png">PNG</option>
+        <option value="webp">WebP</option>
+        <option value="jpeg">JPG</option>
+      </select>
+      <div class="btnr">
+        <button class="btn btn-dl" id="bDl" disabled>DOWNLOAD</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const uploadBox = $('uploadBox');
+const fileInput = $('fileInput');
+const canvas = $('previewCanvas');
+const ctx = canvas.getContext('2d');
+const noImage = $('noImage');
+const bDl = $('bDl');
+
+const sL = $('sL'), sR = $('sR'), sT = $('sT'), sB = $('sB');
+const oL = $('oL'), oR = $('oR'), oT = $('oT'), oB = $('oB');
+const cL = $('cL'), cR = $('cR'), cT = $('cT'), cB = $('cB');
+const sFmt = $('sFmt');
+
+const vL = $('vL'), vR = $('vR'), vT = $('vT'), vB = $('vB');
+const voL = $('voL'), voR = $('voR'), voT = $('voT'), voB = $('voB');
+
+const presets = {
+  tipis:{L:5,R:5,T:5,B:5},
+  sedang:{L:20,R:20,T:20,B:20},
+  tebal:{L:60,R:60,T:60,B:60},
+  kotak:{L:15,R:15,T:15,B:15}
+};
+
+let img = null;
+
+function h2r(hex, a) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return 'rgba('+r+','+g+','+b+','+a+')';
+}
+
+function draw() {
+  if (!img) return;
+
+  const L = +sL.value;
+  const R = +sR.value;
+  const T = +sT.value;
+  const B = +sB.value;
+  const aL = +oL.value/100;
+  const aR = +oR.value/100;
+  const aT = +oT.value/100;
+  const aB = +oB.value/100;
+
+  const W = img.width + L + R;
+  const H = img.height + T + B;
+  canvas.width = W;
+  canvas.height = H;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.drawImage(img, L, T);
+
+  if (L > 0) ctx.fillStyle = h2r(cL.value, aL), ctx.fillRect(0, 0, L, H);
+  if (R > 0) ctx.fillStyle = h2r(cR.value, aR), ctx.fillRect(W-R, 0, R, H);
+  if (T > 0) ctx.fillStyle = h2r(cT.value, aT), ctx.fillRect(L, 0, W-L-R, T);
+  if (B > 0) ctx.fillStyle = h2r(cB.value, aB), ctx.fillRect(L, H-B, W-L-R, B);
+
+  const sc = Math.min((window.innerWidth*.92)/W, (window.innerHeight*.48)/H, 1);
+  canvas.style.width = (W*sc)+'px';
+  canvas.style.height = (H*sc)+'px';
+}
+
+function syncV() {
+  vL.textContent = sL.value+'px';
+  vR.textContent = sR.value+'px';
+  vT.textContent = sT.value+'px';
+  vB.textContent = sB.value+'px';
+  voL.textContent = oL.value+'%';
+  voR.textContent = oR.value+'%';
+  voT.textContent = oT.value+'%';
+  voB.textContent = oB.value+'%';
+}
+
+uploadBox.addEventListener('click', () => fileInput.click());
+uploadBox.addEventListener('dragover', e => { e.preventDefault(); uploadBox.style.borderColor = '#fff'; });
+uploadBox.addEventListener('dragleave', () => uploadBox.style.borderColor = '#2a2a2a');
+uploadBox.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadBox.style.borderColor = '#2a2a2a';
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) loadImg(f);
+});
+fileInput.addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f) loadImg(f);
+});
+
+document.querySelectorAll('[data-p]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('[data-p]').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    const p = presets[b.dataset.p];
+    sL.value = p.L; sR.value = p.R; sT.value = p.T; sB.value = p.B;
+    syncV();
+    draw();
+  });
+});
+
+function loadImg(file) {
+  const r = new FileReader();
+  r.onload = e => {
+    const im = new Image();
+    im.onload = () => {
+      img = im;
+      canvas.style.display = 'block';
+      noImage.style.display = 'none';
+      bDl.disabled = false;
+      draw();
+    };
+    im.src = e.target.result;
+  };
+  r.readAsDataURL(file);
+}
+
+sL.addEventListener('input', () => { vL.textContent = sL.value+'px'; draw(); });
+sR.addEventListener('input', () => { vR.textContent = sR.value+'px'; draw(); });
+sT.addEventListener('input', () => { vT.textContent = sT.value+'px'; draw(); });
+sB.addEventListener('input', () => { vB.textContent = sB.value+'px'; draw(); });
+oL.addEventListener('input', () => { voL.textContent = oL.value+'%'; draw(); });
+oR.addEventListener('input', () => { voR.textContent = oR.value+'%'; draw(); });
+oT.addEventListener('input', () => { voT.textContent = oT.value+'%'; draw(); });
+oB.addEventListener('input', () => { voB.textContent = oB.value+'%'; draw(); });
+cL.addEventListener('input', draw); cR.addEventListener('input', draw);
+cT.addEventListener('input', draw); cB.addEventListener('input', draw);
+
+bDl.addEventListener('click', () => {
+  if (!img) return;
+  const mime = sFmt.value === 'png' ? 'image/png' : sFmt.value === 'jpeg' ? 'image/jpeg' : 'image/webp';
+  const data = canvas.toDataURL(mime, 0.92);
+  const a = document.createElement('a');
+  a.download = 'border.'+sFmt.value;
+  a.href = data;
+  a.click();
+});
+
+window.addEventListener('resize', () => { if (img) draw(); });
+</script>
+</body>
+</html>

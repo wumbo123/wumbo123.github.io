@@ -59,6 +59,8 @@
     <canvas id="bgCanvas"></canvas>
 
     <main class="relative z-10 flex flex-col items-center p-4 md:p-8">
+        <a href="/" class="absolute top-4 left-4 text-white/40 hover:text-white text-sm z-20">← Home</a>
+        
         <header class="text-center mb-8">
             <h1 id="pageTitle" class="text-3xl md:text-4xl font-bold text-white mb-2">Image Tools</h1>
             <p id="pageDesc" class="text-white/50">Resize & Crop Gambar</p>
@@ -124,7 +126,7 @@
         <div id="content-crop" class="tab-content w-full max-w-2xl space-y-6">
             <div class="glass-panel p-6 rounded-2xl text-center">
                 <label class="block text-sm font-semibold mb-4 text-left text-white/80">1. Unggah Gambar</label>
-                <input type="file" id="crop-fileInput" accept="image/*" class="block w-full text-sm text-white/50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-400 hover:file:bg-blue-500/30 cursor-pointer" />
+                <input type="file" id="crop-fileInput" accept="image/*" class="block w-full text-sm text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-500/30 file:text-emerald-300 hover:file:bg-emerald-500/40 cursor-pointer" />
             </div>
 
             <div id="crop-settings" class="hidden space-y-6">
@@ -165,6 +167,23 @@
                             <option value="jpeg" class="text-black">JPEG</option>
                         </select>
                     </div>
+
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-white/50 mb-1 uppercase">Kualitas: <span id="quality-value" class="text-blue-400">90%</span></label>
+                        <input type="range" id="crop-quality" min="50" max="100" value="90" class="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    </div>
+
+                    <div class="flex items-center gap-3 p-4 bg-purple-500/10 rounded-2xl border border-purple-500/20 mb-4">
+                        <input type="checkbox" id="crop-flavor-check" class="w-5 h-5 rounded border-purple-400 text-purple-500 cursor-pointer">
+                        <label for="crop-flavor-check" class="text-sm font-medium text-white/70 cursor-pointer select-none">
+                            Tambahkan Flavor Teks
+                        </label>
+                    </div>
+
+                    <div id="crop-flavor-input-wrapper" class="hidden mb-4">
+                        <label class="block text-xs font-bold text-white/50 mb-1 uppercase">Flavor Teks</label>
+                        <input type="text" id="crop-flavor-text" placeholder="Contoh: chapter_01" class="w-full p-3 bg-white/5 border border-white/10 rounded-lg focus:border-purple-500 outline-none transition text-white">
+                    </div>
                 </div>
 
                 <div class="glass-panel p-6 rounded-2xl text-center">
@@ -184,9 +203,13 @@
             </div>
 
             <div id="crop-loading" class="hidden text-center py-8">
-                <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-                <p class="text-white/70 mt-4 font-medium">Memproses gambar...</p>
-                <p id="crop-loading-progress" class="text-white/50 text-sm mt-1">0 / 0</p>
+                <div class="w-full max-w-md mx-auto">
+                    <p class="text-white/70 mb-3 font-medium">Memproses gambar...</p>
+                    <div class="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                        <div id="crop-loading-bar" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full rounded-full transition-all duration-200" style="width: 0%"></div>
+                    </div>
+                    <p id="crop-loading-progress" class="text-white/50 text-sm mt-2">0 / 0</p>
+                </div>
             </div>
 
             <div id="crop-result" class="hidden space-y-8">
@@ -503,15 +526,33 @@
         document.getElementById('crop-cols').addEventListener('input', cropUpdateGrid);
         document.getElementById('crop-rows').addEventListener('input', cropUpdateGrid);
 
+        document.getElementById('crop-flavor-check').addEventListener('change', function() {
+            const inputWrapper = document.getElementById('crop-flavor-input-wrapper');
+            if (this.checked) {
+                inputWrapper.classList.remove('hidden');
+            } else {
+                inputWrapper.classList.add('hidden');
+                document.getElementById('crop-flavor-text').value = '';
+            }
+        });
+
+        document.getElementById('crop-quality').addEventListener('input', function() {
+            document.getElementById('quality-value').textContent = this.value + '%';
+        });
+
         function getShortUUID() {
             const length = Math.floor(Math.random() * 4) + 5;
             return Math.random().toString(36).substring(2, 2 + length);
         }
 
         function cropGenerate() {
+            const startTime = Date.now();
             const cols = parseInt(document.getElementById('crop-cols').value) || 1;
             const rows = parseInt(document.getElementById('crop-rows').value) || 1;
             const outputFormat = document.getElementById('crop-format').value;
+            const quality = parseInt(document.getElementById('crop-quality').value) / 100;
+            const flavorCheck = document.getElementById('crop-flavor-check').checked;
+            const flavorText = flavorCheck ? document.getElementById('crop-flavor-text').value.trim() : null;
             const resultsGrid = document.getElementById('crop-results');
             const resultArea = document.getElementById('crop-result');
             const jsonOutput = document.getElementById('jsonOutput');
@@ -530,6 +571,8 @@
                 canvas.width = 1080;
                 canvas.height = 1080;
 
+                let totalOutputSize = 0;
+
                 const finalData = {
                     metadata: {
                         uploaded_filename: cropFileName,
@@ -538,17 +581,21 @@
                             width: cropImg.width,
                             height: cropImg.height
                         },
-                        timestamp: new Date().toISOString()
+                        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+                        processing_time_ms: Date.now() - startTime
                     },
                     config: {
                         mode: cropDir,
                         output_format: outputFormat,
+                        quality: quality,
+                        flavor_text: flavorText,
                         division: {
                             vertical: rows,
                             horizontal: cols
                         },
                         total_pieces: rows * cols
                     },
+                    total_output_size: 0,
                     pieces: []
                 };
 
@@ -569,19 +616,23 @@
                         ctx.clearRect(0, 0, 1080, 1080);
                         ctx.drawImage(cropImg, sX, sY, sW, sH, 0, 0, 1080, 1080);
                         
-                        const imgData = canvas.toDataURL(mimeType, 0.9);
-                        const fileName = `crop_${cropDir}_row${r + 1}_col${c + 1}_${getShortUUID()}.${ext}`;
+                        const imgData = canvas.toDataURL(mimeType, quality);
+                        const flavorPrefix = flavorText ? `_${flavorText}` : '';
+                        const fileName = `crop_${cropDir}_row${r + 1}_col${c + 1}${flavorPrefix}_${getShortUUID()}.${ext}`;
 
                         const now = new Date();
-                        const timestamp = now.toISOString();
+                        const timestamp = now.toISOString().replace('T', ' ').substring(0, 19);
 
                         const b64 = imgData.split(',')[1];
                         const checksum = b64.substring(0, 50);
+                        const outputFileSize = Math.round((b64.length * 3) / 4);
+                        totalOutputSize += outputFileSize;
 
                         finalData.pieces.push({
                             id: counter++,
                             filename: fileName,
                             datetime: timestamp,
+                            output_file_size: outputFileSize,
                             checksum: checksum
                         });
 
@@ -597,9 +648,13 @@
                         zip.file(fileName, b64, {base64: true});
                         
                         processed++;
+                        const progressPercent = Math.round((processed / totalPieces) * 100);
+                        document.getElementById('crop-loading-bar').style.width = progressPercent + '%';
                         document.getElementById('crop-loading-progress').textContent = `${processed} / ${totalPieces}`;
                     }
                 }
+
+                finalData.total_output_size = totalOutputSize;
 
                 document.getElementById('crop-loading').classList.add('hidden');
                 document.getElementById('crop-result').classList.remove('hidden');

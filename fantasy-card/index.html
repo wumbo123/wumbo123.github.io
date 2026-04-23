@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Datasheet Builder - Ultra HD</title>
+    <title>Fantasy Card Builder - Ultra HD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     <style>
@@ -87,6 +87,26 @@
             background: linear-gradient(to top, #16162a 0%, transparent 100%);
         }
 
+        /* Inline Price */
+        .price-inline {
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+        }
+
+        /* Rarity Badge - Top Right */
+        .rarity-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            z-index: 20;
+        }
+
         /* Card Body */
         .card-body {
             padding: 24px 24px 20px;
@@ -111,7 +131,7 @@
         }
 
         /* Description */
-.card-description {
+        .card-description {
             font-size: 14px;
             line-height: 1.7;
             color: #a0a0b0;
@@ -142,7 +162,7 @@
         .rarity-infinite { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: #c4b5fd; border: 1px solid #a78bfa; box-shadow: 0 0 35px rgba(139,92,246,0.5); }
         .rarity-absolute { background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%); color: #1e293b; border: 1px solid #e2e8f0; box-shadow: 0 0 30px rgba(255,255,255,0.3); }
         .rarity-artifact { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: #fed7aa; border: 1px solid #f97316; box-shadow: 0 0 25px rgba(249,115,22,0.4); }
-.rarity-special { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 50%, #155e75 100%); color: #67e8f9; border: 1px solid #22d3ee; box-shadow: 0 0 35px rgba(34,211,238,0.5), 0 0 60px rgba(6,182,212,0.3); }
+        .rarity-special { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 50%, #155e75 100%); color: #67e8f9; border: 1px solid #22d3ee; box-shadow: 0 0 35px rgba(34,211,238,0.5), 0 0 60px rgba(6,182,212,0.3); }
 
         /* Input Styles */
         .input-field {
@@ -339,15 +359,29 @@
     <!-- Back to Root Button -->
     <a href="/" class="back-to-root">
         <span>←</span>
-        <span>Kembali ke Root</span>
+        <span>Home</span>
     </a>
 
     <div id="app" class="w-full max-w-lg mx-auto my-8">
         <!-- FORM INPUT -->
         <div id="input-section" class="bg-[#12121f] border border-[#2d2d45] rounded-3xl p-6 sm:p-8 shadow-2xl">
-            <h1 class="text-2xl font-fantasy text-center text-yellow-500 mb-6 tracking-widest uppercase border-b border-[#2d2d45] pb-4">Datasheet Builder</h1>
+            <h1 class="text-2xl font-fantasy text-center text-yellow-500 mb-6 tracking-widest uppercase border-b border-[#2d2d45] pb-4">Fantasy Card Builder</h1>
             
             <div class="space-y-5">
+                <!-- Price Section -->
+                <div class="bg-[#0f0f1a] rounded-xl p-5 border border-[#2d2d45]">
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                            <input type="checkbox" id="enable-price" class="custom-checkbox" onchange="togglePriceInput()">
+                            <span>Tampilkan Harga Kartu</span>
+                        </label>
+                    </div>
+                    <div id="price-input-container" class="hidden">
+                        <input type="number" id="input-price" placeholder="Contoh: 40111" class="input-field w-full" oninput="updateCardPrice()">
+                        <p class="text-[10px] text-gray-500 mt-2">Masukkan angka harga kartu (5 digit)</p>
+                    </div>
+                </div>
+
                 <!-- Image Upload -->
                 <div>
                     <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Unggah Cover Gambar</label>
@@ -356,10 +390,43 @@
 
                 <!-- Title -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Nama Item</label>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Nama Kartu</label>
                     <input type="text" id="input-title" placeholder="Contoh: Thunder Strike" class="input-field w-full">
                 </div>
-                
+
+                <!-- Type & Rarity -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Tipe Skill</label>
+                        <input type="text" id="input-skill-type" placeholder="Aktif / Pasif" class="input-field w-full">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Rarity</label>
+                        <select id="input-rarity" class="custom-select w-full">
+                            <option value="Common">Common</option>
+                            <option value="Uncommon">Uncommon</option>
+                            <option value="Rare">Rare</option>
+                            <option value="Epic">Epic</option>
+                            <option value="Legendary">Legendary</option>
+                            <option value="Mythic">Mythic</option>
+                            <option value="Exotic">Exotic</option>
+                            <option value="Transcendent">Transcendent</option>
+                            <option value="Forbidden">Forbidden</option>
+                            <option value="Celestial">Celestial</option>
+                            <option value="Divine">Divine</option>
+                            <option value="Omniversal">Omniversal</option>
+                            <option value="Primordial">Primordial</option>
+                            <option value="Cosmic">Cosmic</option>
+                            <option value="Quantum">Quantum</option>
+                            <option value="Eternal">Eternal</option>
+                            <option value="Infinite">Infinite</option>
+                            <option value="Absolute">Absolute</option>
+                            <option value="Artifact">Artifact</option>
+                            <option value="Special">Special</option>
+                        </select>
+                    </div>
+                </div>
+
                 <!-- Sliders -->
                 <div class="space-y-4 bg-[#0a0a14] p-5 rounded-xl border border-[#2d2d45]">
                     <div>
@@ -378,17 +445,42 @@
                         <p class="text-[9px] text-gray-600 mt-1">Geser untuk mengatur posisi vertikal gambar</p>
                     </div>
                     
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-2 flex justify-between">
-                            Ukuran Judul <span><span id="val-title">28</span>px</span>
-                        </label>
-                        <input type="range" id="size-title" min="16" max="40" value="28" class="w-full">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-2 flex justify-between">
+                                Ukuran Judul <span><span id="val-title">28</span>px</span>
+                            </label>
+                            <input type="range" id="size-title" min="16" max="40" value="28" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-2 flex justify-between">
+                                Ukuran Deskripsi <span><span id="val-desc">14</span>px</span>
+                            </label>
+                            <input type="range" id="size-desc" min="10" max="20" value="14" class="w-full">
+                        </div>
                     </div>
+                </div>
+
+                <!-- Text Align -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Perataan Teks</label>
+                    <div class="flex gap-2">
+                        <button onclick="setAlign('left')" class="flex-1 py-3 bg-[#1a1a2e] rounded-xl text-xs font-bold hover:bg-yellow-700 transition uppercase">Kiri</button>
+                        <button onclick="setAlign('center')" class="flex-1 py-3 bg-yellow-600 rounded-xl text-xs font-bold transition uppercase">Tengah</button>
+                        <button onclick="setAlign('right')" class="flex-1 py-3 bg-[#1a1a2e] rounded-xl text-xs font-bold hover:bg-yellow-700 transition uppercase">Kanan</button>
+                    </div>
+                    <input type="hidden" id="input-align" value="center">
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Deskripsi</label>
+                    <textarea id="input-description" rows="4" placeholder="Tulis deskripsi skill di sini..." class="input-field w-full resize-none"></textarea>
                 </div>
 
                 <!-- Generate Button -->
                 <button onclick="generateCard()" class="btn-primary w-full">
-                    Buat Datasheet
+                    Buat Kartu
                 </button>
             </div>
         </div>
@@ -408,15 +500,35 @@
                     <!-- Header with Image -->
                     <div id="display-cover-frame" class="card-header cursor-zoom-in" onclick="zoomImage()">
                         <img id="display-image" src="" alt="Card Cover">
+                        
+                        <!-- Rarity Badge - Right -->
+                        <div id="display-rarity-badge" class="rarity-badge rarity-common">COMMON</div>
                     </div>
 
                     <!-- Body -->
                     <div class="card-body">
                         <!-- Title -->
-                        <h2 id="display-title" class="card-title glow-gold text-white text-center">NAMA ITEM</h2>
+                        <h2 id="display-title" class="card-title glow-gold text-white text-center">SKILL NAME</h2>
 
                         <!-- Divider -->
                         <div class="card-divider"></div>
+
+                        <!-- Description -->
+                        <div id="display-description" class="card-description">
+                            Deskripsi skill akan muncul di sini...
+                        </div>
+
+                        <!-- Type & Price -->
+                        <div class="flex justify-between items-center mt-6 pt-4 border-t border-[#2a2a45]">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-gray-500 font-bold uppercase">Skill Type:</span>
+                                <span id="display-skill-type" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#2a2a4a] text-gray-300 border border-[#3d3d5c]">ACTIVE</span>
+                            </div>
+                            <div id="price-container" class="hidden flex items-center gap-2">
+                                <span class="text-[10px] text-gray-500 font-bold uppercase">Price:</span>
+                                <span id="display-price" class="price-inline text-sm font-bold"></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -439,6 +551,28 @@
     </div>
 
     <script>
+        // Price Toggle
+        function togglePriceInput() {
+            const checkbox = document.getElementById('enable-price');
+            const container = document.getElementById('price-input-container');
+            
+            if (checkbox.checked) {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        function updateCardPrice() {
+            const price = document.getElementById('input-price').value;
+            const priceContainer = document.getElementById('price-container');
+            const priceInline = document.getElementById('display-price');
+            if (price) {
+                priceContainer.classList.remove('hidden');
+                priceInline.textContent = price;
+            }
+        }
+
         // Range Slider Listeners
         document.getElementById('size-cover').addEventListener('input', (e) => {
             document.getElementById('val-cover').textContent = e.target.value;
@@ -457,23 +591,73 @@
             document.getElementById('val-title').textContent = e.target.value;
         });
 
+        document.getElementById('size-desc').addEventListener('input', (e) => {
+            document.getElementById('val-desc').textContent = e.target.value;
+        });
+
+        function setAlign(align) {
+            document.getElementById('input-align').value = align;
+            const buttons = document.querySelectorAll('#input-section button[onclick^="setAlign"]');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-yellow-600');
+                btn.classList.add('bg-[#1a1a2e]');
+            });
+            event.currentTarget.classList.remove('bg-[#1a1a2e]');
+            event.currentTarget.classList.add('bg-yellow-600');
+        }
+
         function generateCard() {
-            const title = document.getElementById('input-title').value || "Unnamed Item";
+            const title = document.getElementById('input-title').value || "Unnamed Skill";
+            const skillType = document.getElementById('input-skill-type').value || "Active Skill";
+            const rarity = document.getElementById('input-rarity').value || "Common";
+            const description = document.getElementById('input-description').value || "No description available.";
+            const price = document.getElementById('input-price').value;
+            const enablePrice = document.getElementById('enable-price').checked;
             
+            const align = document.getElementById('input-align').value;
             const titleSize = document.getElementById('size-title').value;
+            const descSize = document.getElementById('size-desc').value;
             const coverHeight = document.getElementById('size-cover').value;
             const imgOffset = document.getElementById('img-offset').value;
             
             // Update card content
             document.getElementById('display-title').textContent = title;
+            document.getElementById('display-skill-type').textContent = skillType || "ACTIVE";
+            document.getElementById('display-description').textContent = description;
 
             // Apply sizes
             document.getElementById('display-title').style.fontSize = titleSize + 'px';
+            document.getElementById('display-description').style.fontSize = descSize + 'px';
+            document.getElementById('display-description').style.textAlign = align;
             document.getElementById('display-cover-frame').style.height = coverHeight + 'px';
             
             // Apply image offset
             const displayImg = document.getElementById('display-image');
             displayImg.style.objectPosition = `center ${imgOffset}%`;
+
+            // Rarity styling
+            const rarityLower = rarity.toLowerCase();
+            const rarityBadge = document.getElementById('display-rarity-badge');
+            const finalCard = document.getElementById('final-card');
+            const rarityColor = getRarityColor(rarityLower);
+            
+            // Update rarity badge
+            rarityBadge.className = 'rarity-badge rarity-' + rarityLower;
+            rarityBadge.textContent = rarity;
+            
+            // Update card border
+            finalCard.style.borderColor = rarityColor;
+            
+            // Show/hide inline price with rarity color
+            const priceContainer = document.getElementById('price-container');
+            const priceInline = document.getElementById('display-price');
+            if (enablePrice && price) {
+                priceContainer.classList.remove('hidden');
+                priceInline.textContent = price;
+                priceInline.style.color = rarityColor;
+            } else {
+                priceContainer.classList.add('hidden');
+            }
 
             // Load image
             const imageInput = document.getElementById('input-image');
@@ -491,6 +675,32 @@
                 document.getElementById('zoomed-img').src = placeholder;
                 toggleView();
             }
+        }
+
+        function getRarityColor(rarity) {
+            const colors = {
+                'common': '#6b7280',
+                'uncommon': '#22c55e',
+                'rare': '#3b82f6',
+                'epic': '#a855f7',
+                'legendary': '#f59e0b',
+                'mythic': '#ec4899',
+                'exotic': '#06b6d4',
+                'transcendent': '#8b5cf6',
+                'forbidden': '#ef4444',
+                'celestial': '#fbbf24',
+                'divine': '#fb923c',
+                'omniversal': '#e879f9',
+                'primordial': '#14b8a6',
+                'cosmic': '#6366f1',
+                'quantum': '#2dd4bf',
+                'eternal': '#f472b6',
+                'infinite': '#a78bfa',
+                'absolute': '#e2e8f0',
+                'artifact': '#f97316',
+                'special': '#22d3ee'
+            };
+            return colors[rarity] || '#3d3d5c';
         }
 
         async function downloadCard() {
@@ -511,7 +721,7 @@
                 loading.classList.add('hidden');
                 
                 const link = document.createElement('a');
-                link.download = `Datasheet_${document.getElementById('display-title').textContent}.png`;
+                link.download = `FantasyCard_${document.getElementById('display-title').textContent}.png`;
                 link.href = dataUrl;
                 link.click();
             } catch (error) {
